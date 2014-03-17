@@ -54,7 +54,9 @@ int bear_cleanup(void) {
 
 static size_t write_data(char *buffer, size_t size, size_t nmemb, void *rep) {
 	*(buffer + size * nmemb) = '\0';
-	alloc_strcat((char**)rep, buffer);
+	if (rep) {
+		alloc_strcat((char**)rep, buffer);
+	}
 
 	return size * nmemb;
 }
