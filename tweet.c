@@ -54,9 +54,7 @@ int bear_cleanup(void) {
 
 static size_t write_data(char *buffer, size_t size, size_t nmemb, void *rep) {
 	*(buffer + size * nmemb) = '\0';
-	if (rep) {
 		alloc_strcat((char**)rep, buffer);
-	}
 
 	return size * nmemb;
 }
@@ -87,8 +85,10 @@ static int http_request(char const *u, int p, char **rep) {
 	curl_easy_setopt (curl, CURLOPT_URL, request);
 	//is it good? i dont know.
 	curl_easy_setopt (curl, CURLOPT_SSL_VERIFYPEER, 0L);
-	curl_easy_setopt (curl, CURLOPT_WRITEDATA, (void *) rep);
-	curl_easy_setopt (curl, CURLOPT_WRITEFUNCTION, write_data);
+	if (rep ) {
+		curl_easy_setopt (curl, CURLOPT_WRITEDATA, (void *) rep);
+		curl_easy_setopt (curl, CURLOPT_WRITEFUNCTION, write_data);
+	}
 
 	ret = curl_easy_perform (curl);
 	if (ret != CURLE_OK) {
