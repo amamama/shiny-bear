@@ -64,7 +64,7 @@ static int http_request(char const *u, int p, char **rep) {
 	puts(__func__);
 	#endif
 
-	if (*rep) {
+	if (rep && *rep) {
 		memset(*rep,0,strlen(*rep));
 	}
 	CURL *curl;
