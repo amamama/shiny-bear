@@ -25,7 +25,7 @@ char **alloc_strcat(char **dest, char const *src) {
 
 
 char *utf8_next_char(char const * const p) {
-	static const char utf8_skip_data[256] = {
+	static char const utf8_skip_data[256] = {
 		0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
