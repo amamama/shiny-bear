@@ -5,6 +5,7 @@ CFLAGS= -ansi -std=c99 -c -W -Wall -Werror
 LDFLAGS= -lcurl -loauth -lcrypto
 OBJS = \
 	tweet.o \
+	utils.o \
 	main.o
 
 
