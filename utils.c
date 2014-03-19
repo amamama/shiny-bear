@@ -25,7 +25,7 @@ char **alloc_strcat(char **dest, char const *src) {
 
 
 char *utf8_next_char(char const * const p) {
-	const char utf8_skip_data[256] = {
+	static const char utf8_skip_data[256] = {
 		0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -44,6 +44,5 @@ int utf8_strlen(char const *p) {
 	for (i = 0; *p; i++) {
 		p = utf8_next_char(p);
 	}
-	printf("%d",i);
 	return i;
 }
