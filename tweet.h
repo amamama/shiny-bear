@@ -2,6 +2,7 @@
 #define __TWEET_H
 
 typedef unsigned long long int tweet_id_t;
+typedef unsigned long long cursor_t;
 
 enum {
 	GET,
@@ -188,7 +189,7 @@ int get_statuses_oembed (
 int get_statuses_retweeters_ids (
 	tweet_id_t id, //required
 	char **res, //response
-	int cursor, //optional. if not 0, add it to argument.
+	cursor_t cursor, //optional. if not 0, add it to argument.
 	int stringify_ids //optional. if not -1, add it to argument.
 	);
 
@@ -252,7 +253,7 @@ int get_friends_ids (
 	char **res, //response
 	tweet_id_t user_id, //optional. if not 0, add it to argument.
 	char *screen_name, //optional. if not 0, add it to argument.
-	int cursor, //optional. if not 0, add it to argument.
+	cursor_t cursor, //optional. if not 0, add it to argument.
 	int stringify_ids, //optional. if not -1, add it to argument.
 	int count //optional. if not 0, add it to argument.
 	);
@@ -261,7 +262,7 @@ int get_followers_ids (
 	char **res, //response
 	tweet_id_t user_id, //optional. if not 0, add it to argument.
 	char *screen_name, //optional. if not 0, add it to argument.
-	int cursor, //optional. if not 0, add it to argument.
+	cursor_t cursor, //optional. if not 0, add it to argument.
 	int stringify_ids, //optional. if not -1, add it to argument.
 	int count //optional. if not 0, add it to argument.
 	);
@@ -274,13 +275,13 @@ int get_fs_lookup (
 
 int get_fs_incoming (
 	char **res, //response
-	int cursor, //optional. if not 0, add it to argument.
+	cursor_t cursor, //optional. if not 0, add it to argument.
 	int stringify_ids //optional. if not -1, add it to argument.
 	);
 
 int get_fs_outgoing (
 	char **res, //response
-	int cursor, //optional. if not 0, add it to argument.
+	cursor_t cursor, //optional. if not 0, add it to argument.
 	int stringify_ids //optional. if not -1, add it to argument.
 	);
 
@@ -317,7 +318,7 @@ int get_friends_list (
 	char **res, //response
 	tweet_id_t user_id, //optional. if not 0, add it to argument.
 	char *screen_name, //optional. if not 0, add it to argument.
-	int cursor, //optional. if not 0, add it to argument.
+	cursor_t cursor, //optional. if not 0, add it to argument.
 	int count, //optional. if not 0, add it to argument.
 	int skip_status, //optional. if not -1, add it to argument.
 	int include_user_entities //optional. if not -1, add it to argument.
@@ -327,7 +328,7 @@ int get_followers_list (
 	char **res, //response
 	tweet_id_t user_id, //optional. if not 0, add it to argument.
 	char *screen_name, //optional. if not 0, add it to argument.
-	int cursor, //optional. if not 0, add it to argument.
+	cursor_t cursor, //optional. if not 0, add it to argument.
 	int count, //optional. if not 0, add it to argument.
 	int skip_status, //optional. if not -1, add it to argument.
 	int include_user_entities //optional. if not -1, add it to argument.
