@@ -41,6 +41,8 @@ enum APIS {
 	ACCOUNT_SETTINGS,
 	ACCOUNT_VERIFY_CREDEBTIALS,
 	ACCOUNT_UPDATE_DELIVERY_DEVICE,
+	ACCOUNT_UPDATE_PROFILE,
+	ACCOUNT_UPDATE_PROFILE_COLORS,
 	NUM_OF_APIS
 };
 
@@ -357,4 +359,24 @@ int post_account_update_delivery_device (
 	int include_entities //optional. if not -1, add it to argument.
 	);
 
+int post_account_update_profile (
+	char **res, //response
+	char *name, //optional. if not 0, add it to argument.
+	char *url, //optional. if not 0, add it to argument.
+	char *location, //optional. if not 0, add it to argument.
+	char *description, //optional. if not 0, add it to argument.
+	int include_entities, //optional. if not -1, add it to argument.
+	int skip_status //optional. if not -1, add it to argument.
+	);
+
+int post_account_update_profile_colors (
+	char **res, //response
+	long profile_background_color, //optional. if not -1, add it to argument.
+	long profile_link_color, //optional. if not -1, add it to argument.
+	long profile_sidebar_border_color, //optional. if not -1, add it to argument.
+	long profile_sidebar_fill_color, //optional. if not -1, add it to argument.
+	long profile_text_color, //optional. if not -1, add it to argument.
+	int include_entities, //optional. if not -1, add it to argument.
+	int skip_status //optional. if not -1, add it to argument.
+	);
 #endif

@@ -77,3 +77,7 @@ Currently this library has wrappers for following twitter REST APIs:
 - [account/verify_credentials](https://dev.twitter.com/docs/api/1.1/get/account/verify_credentials)
 - [account/settings](https://dev.twitter.com/docs/api/1.1/post/account/settings)
 - [account/update_delivery_device](https://dev.twitter.com/docs/api/1.1/post/account/update_delivery_device)
+- [account/update_profile](https://dev.twitter.com/docs/api/1.1/post/account/update_profile)
+- ~~[account/update_profile_background_image](https://dev.twitter.com/docs/api/1.1/post/account/update_profile_background_image)~~
+- [account/update_profile_colors](https://dev.twitter.com/docs/api/1.1/post/account/update_profile_colors)
+- ~~[account/update_profile_image](https://dev.twitter.com/docs/api/1.1/post/account/update_profile_image)~~
