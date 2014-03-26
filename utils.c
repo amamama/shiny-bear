@@ -46,3 +46,25 @@ int utf8_strlen(char const *p) {
 	}
 	return i;
 }
+
+char *utf8_offset_to_pointer(char const *str, int offset) {
+	if (offset < 0) {
+		return NULL;
+	}
+	for(;offset--;) {
+		str = utf8_next_char(str);
+	}
+	return (char *)str;
+}
+
+int utf8_pointer_to_offset(char const *str, char const * const pos) {
+	int ret = 0;
+	if (pos < str) {
+		ret = - utf8_pointer_to_offset (pos, str);
+	} else {
+		for(; str < pos; ret++) {
+			str = utf8_next_char(str);
+		}
+	}
+	return ret;
+}
