@@ -884,7 +884,7 @@ static char **add_description(enum APIS api, char **uri, char *description){
 
 static inline char **add_color(char **uri, int color, int digit){
 	char hex[7] = {0};
-	snprintf(hex, 7, "%0*x", digit?digit:6, color);
+	snprintf(hex, sizeof(hex), "%0*x", digit?digit:6, color);
 	alloc_strcat(uri, hex);
 	return uri;
 }
