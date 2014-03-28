@@ -2,7 +2,7 @@
 #define __TWEET_H
 
 typedef unsigned long long int tweet_id_t;
-typedef unsigned long long cursor_t;
+typedef long long int cursor_t;
 
 enum {
 	GET,
