@@ -44,6 +44,10 @@ enum APIS {
 	ACCOUNT_UPDATE_DELIVERY_DEVICE,
 	ACCOUNT_UPDATE_PROFILE,
 	ACCOUNT_UPDATE_PROFILE_COLORS,
+	BLOCKS_LIST,
+	BLOCKS_IDS,
+	BLOCKS_CREATE,
+	BLOCKS_DESTROY,
 	NUM_OF_APIS
 };
 
@@ -100,9 +104,9 @@ int get_statuses_mentions_timeline (
 	);
 
 int get_statuses_user_timeline (
+	char **res, //response
 	tweet_id_t user_id, //Always specify either an user_id or screen_name when requesting a user timeline.
 	char *screen_name, //Always specify either an user_id or screen_name when requesting a user timeline.
-	char **res, //response
 	int count, //optional. if not 0, add it to argument.
 	tweet_id_t since_id, //optional. if not 0, add it to argument.
 	tweet_id_t max_id, //optional. if not 0, add it to argument.

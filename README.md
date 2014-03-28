@@ -81,3 +81,7 @@ Currently this library has wrappers for following twitter REST APIs:
 - ~~[account/update_profile_background_image](https://dev.twitter.com/docs/api/1.1/post/account/update_profile_background_image)~~
 - [account/update_profile_colors](https://dev.twitter.com/docs/api/1.1/post/account/update_profile_colors)
 - ~~[account/update_profile_image](https://dev.twitter.com/docs/api/1.1/post/account/update_profile_image)~~
+- [blocks/list](https://dev.twitter.com/docs/api/1.1/get/blocks/list)
+- [blocks/ids](https://dev.twitter.com/docs/api/1.1/get/blocks/ids)
+- [blocks/create](https://dev.twitter.com/docs/api/1.1/post/blocks/create)
+- [blocks/destroy](https://dev.twitter.com/docs/api/1.1/post/blocks/destroy)

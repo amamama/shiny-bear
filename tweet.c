@@ -118,6 +118,10 @@ char const * api_uri[] = {
 [ACCOUNT_UPDATE_DELIVERY_DEVICE] = "account/update_delivery_device.json",
 [ACCOUNT_UPDATE_PROFILE] = "account/update_profile.json",
 [ACCOUNT_UPDATE_PROFILE_COLORS] = "account/update_profile_colors.json",
+[BLOCKS_LIST] = "blocks/list.json",
+[BLOCKS_IDS] = "blocks/ids.json",
+[BLOCKS_CREATE] = "blocks/create.json",
+[BLOCKS_DESTROY] = "blocks/destroy.json",
 };
 
 inline static char **add_que_or_amp(enum APIS api, char **uri) {
@@ -1024,9 +1028,9 @@ Example Values: false
 }
 
 int get_statuses_user_timeline (
+	char **res, //response
 	tweet_id_t user_id, //Always specify either an user_id or screen_name when requesting a user timeline.
 	char *screen_name, //Always specify either an user_id or screen_name when requesting a user timeline.
-	char **res, //response
 	int count, //optional. if not 0, add it to argument.
 	tweet_id_t since_id, //optional. if not 0, add it to argument.
 	tweet_id_t max_id, //optional. if not 0, add it to argument.
@@ -3386,4 +3390,228 @@ When set to either true, t or 1 statuses will not be included in the returned us
 }
 
 // POST account/update_profile_image is too difficult to implement
+
+int get_blocks_list (
+	char **res, //response
+	int include_entities, //optional. if not -1, add it to argument.
+	int skip_status, //optional. if not -1, add it to argument.
+	cursor_t cursor //optional. if not 0, add it to argument.
+	) {
+/*
+Resource URL
+https://api.twitter.com/1.1/blocks/list.json
+Parameters
+include_entities optional
+
+The entities node will not be included when set to false.
+
+Example Values: false
+
+skip_status optional
+
+When set to either true, t or 1 statuses will not be included in the returned user objects.
+
+cursor semi-optional
+
+Causes the list of blocked users to be broken into pages of no more than 5000 IDs at a time. The number of IDs returned is not guaranteed to be 5000 as suspended users are filtered out after connections are queried. If no cursor is provided, a value of -1 will be assumed, which is the first "page."
+
+The response from the API will include a previous_cursor and next_cursor to allow paging back and forth. See Using cursors to navigate collections for more information.
+
+Example Values: 12893764510938
+
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	char *uri = NULL;
+	enum APIS api = BLOCKS_LIST;
+	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri[api]);
+
+	add_include_entities(api, &uri, include_entities);
+	add_skip_status(api, &uri, skip_status);
+	add_cursor(api, &uri, cursor);
+
+	int ret = http_request(uri, GET, res);
+
+	free(uri);uri = NULL;
+
+	return ret;
+}
+
+int get_blocks_ids (
+	char **res, //response
+	int stringify_ids, //optional. if not -1, add it to argument.
+	cursor_t cursor //optional. if not 0, add it to argument.
+	) {
+/*
+Resource URL
+https://api.twitter.com/1.1/blocks/ids.json
+Parameters
+stringify_ids optional
+
+Many programming environments will not consume our ids due to their size. Provide this option to have ids returned as strings instead. Read more about Twitter IDs, JSON and Snowflake.
+
+Example Values: true
+
+cursor semi-optional
+
+Causes the list of IDs to be broken into pages of no more than 5000 IDs at a time. The number of IDs returned is not guaranteed to be 5000 as suspended users are filtered out after connections are queried. If no cursor is provided, a value of -1 will be assumed, which is the first "page."
+
+The response from the API will include a previous_cursor and next_cursor to allow paging back and forth. See Using cursors to navigate collections for more information.
+
+Example Values: 12893764510938
+
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	char *uri = NULL;
+	enum APIS api = BLOCKS_IDS;
+	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri[api]);
+
+	add_stringify_ids(api, &uri, stringify_ids);
+	add_cursor(api, &uri, cursor);
+
+	int ret = http_request(uri, GET, res);
+
+	free(uri);uri = NULL;
+
+	return ret;
+}
+
+int post_blocks_create (
+	char **res, //response
+	char *screen_name, //optional. if not 0, add it to argument.
+	tweet_id_t user_id, //optional. if not 0, add it to argument.
+	int include_entities, //optional. if not -1, add it to argument.
+	int skip_status //optional. if not -1, add it to argument.
+	) {
+/*
+Resource URL
+https://api.twitter.com/1.1/blocks/create.json
+Parameters
+
+Either screen_name or user_id must be provided.
+screen_name optional
+
+The screen name of the potentially blocked user. Helpful for disambiguating when a valid screen name is also a user ID.
+
+Example Values: noradio
+user_id optional
+
+The ID of the potentially blocked user. Helpful for disambiguating when a valid user ID is also a valid screen name.
+
+Example Values: 12345
+include_entities optional
+
+The entities node will not be included when set to false.
+
+Example Values: false
+skip_status optional
+
+When set to either true, t or 1 statuses will not be included in the returned user objects.
+
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	char *uri = NULL;
+	enum APIS api = BLOCKS_CREATE;
+	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri[api]);
+
+	add_screen_name(api, &uri, screen_name);
+	add_user_id(api, &uri, user_id);
+	add_include_entities(api, &uri, include_entities);
+	add_skip_status(api, &uri, skip_status);
+
+	int ret = http_request(uri, POST, res);
+
+	free(uri);uri = NULL;
+
+	return ret;
+}
+
+int post_blocks_destroy (
+	char **res, //response
+	char *screen_name, //optional. if not 0, add it to argument.
+	tweet_id_t user_id, //optional. if not 0, add it to argument.
+	int include_entities, //optional. if not -1, add it to argument.
+	int skip_status //optional. if not -1, add it to argument.
+	) {
+/*
+Resource URL
+https://api.twitter.com/1.1/blocks/destroy.json
+Parameters
+
+One of screen_name or id must be provided.
+
+screen_name optional
+
+The screen name of the potentially blocked user. Helpful for disambiguating when a valid screen name is also a user ID.
+
+Example Values: noradio
+
+user_id optional
+
+The ID of the potentially blocked user. Helpful for disambiguating when a valid user ID is also a valid screen name.
+
+Example Values: 12345
+
+include_entities optional
+
+The entities node will not be included when set to false.
+
+Example Values: false
+
+skip_status optional
+
+When set to either true, t or 1 statuses will not be included in the returned user objects.
+
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	char *uri = NULL;
+	enum APIS api = BLOCKS_DESTROY;
+	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri[api]);
+
+	add_screen_name(api, &uri, screen_name);
+	add_user_id(api, &uri, user_id);
+	add_include_entities(api, &uri, include_entities);
+	add_skip_status(api, &uri, skip_status);
+
+	int ret = http_request(uri, POST, res);
+
+	free(uri);uri = NULL;
+
+	return ret;
+}
 
