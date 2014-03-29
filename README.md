@@ -85,3 +85,8 @@ Currently this library has wrappers for following twitter REST APIs:
 - [blocks/ids](https://dev.twitter.com/docs/api/1.1/get/blocks/ids)
 - [blocks/create](https://dev.twitter.com/docs/api/1.1/post/blocks/create)
 - [blocks/destroy](https://dev.twitter.com/docs/api/1.1/post/blocks/destroy)
+- [users/lookup](https://dev.twitter.com/docs/api/1.1/get/users/lookup)
+- [users/show](https://dev.twitter.com/docs/api/1.1/get/users/show)
+- [users/search](https://dev.twitter.com/docs/api/1.1/get/users/search)
+- [users/contributees](https://dev.twitter.com/docs/api/1.1/get/users/contributees)
+- [users/contributors](https://dev.twitter.com/docs/api/1.1/get/users/contributors)
