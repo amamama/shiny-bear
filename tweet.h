@@ -19,6 +19,7 @@ enum APIS {
 	STATUSES_DESTROY_BY_ID,
 	STATUSES_UPDATE,
 	STATUSES_RETWEET_BY_ID,
+	STATUSES_UPDATE_WITH_MEDIA,
 	STATUSES_OEMBED,
 	STATUSES_RETWEETERS_IDS,
 	SEARCH_TWEETS,
@@ -43,7 +44,9 @@ enum APIS {
 	ACCOUNT_VERIFY_CREDEBTIALS,
 	ACCOUNT_UPDATE_DELIVERY_DEVICE,
 	ACCOUNT_UPDATE_PROFILE,
+	ACCOUNT_UPDATE_PROFILE_BACKGROUND_IMAGE,
 	ACCOUNT_UPDATE_PROFILE_COLORS,
+	ACCOUNT_UPDATE_PROFILE_IMAGE,
 	BLOCKS_LIST,
 	BLOCKS_IDS,
 	BLOCKS_CREATE,
@@ -53,6 +56,9 @@ enum APIS {
 	USERS_SEARCH,
 	USERS_CONTRIBUTEES,
 	USERS_CONTRIBUTORS,
+	ACCOUNT_REMOVE_PROFILE_BANNER,
+	ACCOUNT_UPDATE_PROFILE_BANNER,
+	USERS_PROFILE_BANNER,
 	NUM_OF_APIS
 };
 
@@ -388,5 +394,10 @@ int post_account_update_profile_colors (
 	long profile_text_color, //optional. if not -1, add it to argument.
 	int include_entities, //optional. if not -1, add it to argument.
 	int skip_status //optional. if not -1, add it to argument.
+	);
+
+
+int post_account_remove_profile_banner (
+	char **res //response
 	);
 #endif

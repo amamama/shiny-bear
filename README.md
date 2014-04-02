@@ -90,3 +90,6 @@ Currently this library has wrappers for following twitter REST APIs:
 - [users/search](https://dev.twitter.com/docs/api/1.1/get/users/search)
 - [users/contributees](https://dev.twitter.com/docs/api/1.1/get/users/contributees)
 - [users/contributors](https://dev.twitter.com/docs/api/1.1/get/users/contributors)
+- [account/remove_profile_banner](https://dev.twitter.com/docs/api/1.1/post/account/remove_profile_banner)
+- ~~[account/update_profile_banner](https://dev.twitter.com/docs/api/1.1/post/account/update_profile_banner)~~
+- [users/profile_banner](https://dev.twitter.com/docs/api/1.1/get/users/profile_banner)

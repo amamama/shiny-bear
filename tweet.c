@@ -84,49 +84,55 @@ static int http_request(char const *u, int p, char **rep) {
 char const *api_uri_1_1 = "https://api.twitter.com/1.1/";
 
 char const * api_uri[] = {
-[STATUSES_MENTIONS_TIMELINE] = "statuses/mentions_timeline.json",
-[STATUSES_USER_TIMELINE] = "statuses/user_timeline.json",
-[STATUSES_HOME_TIMELINE]  = "statuses/home_timeline.json",
-[STATUSES_RETWEETS_OF_ME] = "statuses/retweets_of_me.json",
-[STATUSES_RETWEETS_BY_ID] = "statuses/retweets/",
-[STATUSES_SHOW_BY_ID] = "statuses/show.json",
-[STATUSES_DESTROY_BY_ID] = "statuses/destroy/",
-[STATUSES_RETWEET_BY_ID] = "statuses/retweet/",
-[STATUSES_UPDATE] = "statuses/update.json",
-[STATUSES_OEMBED] = "statuses/oembed.json",
-[STATUSES_RETWEETERS_IDS] = "statuses/retweeters/ids.json",
-[SEARCH_TWEETS] = "search/tweets.json",
-[DIRECT_MESSAGES] = "direct_messages.json",
-[DM_SENT] = "direct_messages/sent.json",
-[DM_SHOW] = "direct_messages/show.json",
-[DM_DESTROY] = "direct_messages/destroy.json ",
-[DM_NEW] = "direct_messages/new.json",
-[FS_NO_RETWEETS_IDS] = "friendships/no_retweets/ids.json",
-[FRIENDS_IDS] = "friends/ids.json",
-[FOLLOWERS_IDS] = "followers/ids.json",
-[FS_LOOKUP] = "friendships/lookup.json",
-[FS_INCOMING] = "friendships/incoming.json",
-[FS_OUTGOING] = "friendships/outgoing.json",
-[FS_CREATE] = "friendships/create.json",
-[FS_DESTROY] = "friendships/destroy.json",
-[FS_UPDATE] = "friendships/update.json",
-[FS_SHOW] = "friendships/show.json",
-[FRIENDS_LIST] = "friends/list.json",
-[FOLLOWERS_LIST] = "followers/list.json",
-[ACCOUNT_SETTINGS] = "account/settings.json",
-[ACCOUNT_VERIFY_CREDEBTIALS] = "account/verify_credentials.json",
-[ACCOUNT_UPDATE_DELIVERY_DEVICE] = "account/update_delivery_device.json",
-[ACCOUNT_UPDATE_PROFILE] = "account/update_profile.json",
-[ACCOUNT_UPDATE_PROFILE_COLORS] = "account/update_profile_colors.json",
-[BLOCKS_LIST] = "blocks/list.json",
-[BLOCKS_IDS] = "blocks/ids.json",
-[BLOCKS_CREATE] = "blocks/create.json",
-[BLOCKS_DESTROY] = "blocks/destroy.json",
-[USERS_LOOKUP] = "users/lookup.json",
-[USERS_SHOW] = "users/show.json",
-[USERS_SEARCH] = "users/search.json",
-[USERS_CONTRIBUTEES] = "users/contributees.json",
-[USERS_CONTRIBUTORS] = "users/contributors.json",
+	[STATUSES_MENTIONS_TIMELINE] = "statuses/mentions_timeline.json",
+	[STATUSES_USER_TIMELINE] = "statuses/user_timeline.json",
+	[STATUSES_HOME_TIMELINE]  = "statuses/home_timeline.json",
+	[STATUSES_RETWEETS_OF_ME] = "statuses/retweets_of_me.json",
+	[STATUSES_RETWEETS_BY_ID] = "statuses/retweets/",
+	[STATUSES_SHOW_BY_ID] = "statuses/show.json",
+	[STATUSES_DESTROY_BY_ID] = "statuses/destroy/",
+	[STATUSES_UPDATE] = "statuses/update.json",
+	[STATUSES_RETWEET_BY_ID] = "statuses/retweet/",
+	[STATUSES_UPDATE_WITH_MEDIA] = "statuses/update_with_media.json",
+	[STATUSES_OEMBED] = "statuses/oembed.json",
+	[STATUSES_RETWEETERS_IDS] = "statuses/retweeters/ids.json",
+	[SEARCH_TWEETS] = "search/tweets.json",
+	[DIRECT_MESSAGES] = "direct_messages.json",
+	[DM_SENT] = "direct_messages/sent.json",
+	[DM_SHOW] = "direct_messages/show.json",
+	[DM_DESTROY] = "direct_messages/destroy.json ",
+	[DM_NEW] = "direct_messages/new.json",
+	[FS_NO_RETWEETS_IDS] = "friendships/no_retweets/ids.json",
+	[FRIENDS_IDS] = "friends/ids.json",
+	[FOLLOWERS_IDS] = "followers/ids.json",
+	[FS_LOOKUP] = "friendships/lookup.json",
+	[FS_INCOMING] = "friendships/incoming.json",
+	[FS_OUTGOING] = "friendships/outgoing.json",
+	[FS_CREATE] = "friendships/create.json",
+	[FS_DESTROY] = "friendships/destroy.json",
+	[FS_UPDATE] = "friendships/update.json",
+	[FS_SHOW] = "friendships/show.json",
+	[FRIENDS_LIST] = "friends/list.json",
+	[FOLLOWERS_LIST] = "followers/list.json",
+	[ACCOUNT_SETTINGS] = "account/settings.json",
+	[ACCOUNT_VERIFY_CREDEBTIALS] = "account/verify_credentials.json",
+	[ACCOUNT_UPDATE_DELIVERY_DEVICE] = "account/update_delivery_device.json",
+	[ACCOUNT_UPDATE_PROFILE] = "account/update_profile.json",
+	[ACCOUNT_UPDATE_PROFILE_BACKGROUND_IMAGE] = "account/update_profile_background_image.json",
+	[ACCOUNT_UPDATE_PROFILE_COLORS] = "account/update_profile_colors.json",
+	[ACCOUNT_UPDATE_PROFILE_IMAGE] = "account/update_profile_image.json",
+	[BLOCKS_LIST] = "blocks/list.json",
+	[BLOCKS_IDS] = "blocks/ids.json",
+	[BLOCKS_CREATE] = "blocks/create.json",
+	[BLOCKS_DESTROY] = "blocks/destroy.json",
+	[USERS_LOOKUP] = "users/lookup.json",
+	[USERS_SHOW] = "users/show.json",
+	[USERS_SEARCH] = "users/search.json",
+	[USERS_CONTRIBUTEES] = "users/contributees.json",
+	[USERS_CONTRIBUTORS] = "users/contributors.json",
+	[ACCOUNT_REMOVE_PROFILE_BANNER] = "account/remove_profile_banner.json",
+	[ACCOUNT_UPDATE_PROFILE_BANNER] = "account/update_profile_banner.json",
+	[USERS_PROFILE_BANNER] = "users/profile_banner.json",
 };
 
 inline static char **add_que_or_amp(enum APIS api, char **uri) {
@@ -1674,6 +1680,8 @@ Example Values: true
 
 	return ret;
 }
+
+//POST statuses/update_with_media is too difficult to implement
 
 int get_statuses_oembed (
 	tweet_id_t id, //required. It is not necessary to include both.
@@ -3927,6 +3935,87 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	add_skip_status(api, &uri, skip_status);
 
 	int ret = http_request(uri, GET, res);
+
+	free(uri);uri = NULL;
+
+	return ret;
+}
+
+int post_account_remove_profile_banner (
+	char **res //response
+	) {
+/*
+Resource URL
+https://api.twitter.com/1.1/account/remove_profile_banner.json
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	char *uri = NULL;
+	enum APIS api = ACCOUNT_REMOVE_PROFILE_BANNER;
+	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri[api]);
+
+	int ret = http_request(uri, POST, res);
+
+	free(uri);uri = NULL;
+
+	return ret;
+}
+
+// POST account/update_profile_banner is too difficult to implement
+
+int get_users_profile_banner (
+	char **res, //response
+	tweet_id_t user_id, //optional. if not 0, add it to argument.
+	char *screen_name //optional. if not 0, add it to argument.
+	) {
+/*
+Resource URL
+https://api.twitter.com/1.1/users/profile_banner.json
+Parameters
+
+Always specify either an user_id or screen_name when requesting this method.
+
+user_id optional
+
+The ID of the user for whom to return results for. Helpful for disambiguating when a valid user ID is also a valid screen name.
+
+Example Values: 12345
+
+Note:: Specifies the ID of the user to befriend. Helpful for disambiguating when a valid user ID is also a valid screen name.
+
+screen_name optional
+
+The screen name of the user for whom to return results for. Helpful for disambiguating when a valid screen name is also a user ID.
+
+Example Values: noradio
+
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	char *uri = NULL;
+	enum APIS api = USERS_PROFILE_BANNER;
+	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri[api]);
+
+	add_user_id(api, &uri, user_id);
+	add_screen_name(api, &uri, screen_name);
+
+	int ret = http_request(uri, POST, res);
 
 	free(uri);uri = NULL;
 
