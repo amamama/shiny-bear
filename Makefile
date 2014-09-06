@@ -11,9 +11,6 @@ OBJS = \
 
 all: $(TARGET)
 
-run: $(TARGET)
-	./$(TARGET)
-
 $(TARGET): $(OBJS)
 	$(CC) -o $(TARGET) $(OBJS) $(LDFLAGS)
 
