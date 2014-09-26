@@ -1,12 +1,8 @@
 bin/
 obj/
-tags
 
 *~
 .*.swp
 *.o
 *.d
-GPATH
-GRTAGS
-GTAGS
 core
