@@ -259,7 +259,7 @@ int post_dm_new (
 	char **res //response
 	);
 
-int get_no_retweets_ids (
+int get_fs_no_retweets_ids (
 	char **res, //response
 	int stringify_ids //optional. if not -1, add it to argument.
 	);
@@ -396,8 +396,80 @@ int post_account_update_profile_colors (
 	int skip_status //optional. if not -1, add it to argument.
 	);
 
+int get_blocks_list (
+	char **res, //response
+	int include_entities, //optional. if not -1, add it to argument.
+	int skip_status, //optional. if not -1, add it to argument.
+	cursor_t cursor //optional. if not 0, add it to argument.
+	);
+
+int get_blocks_ids (
+	char **res, //response
+	int stringify_ids, //optional. if not -1, add it to argument.
+	cursor_t cursor //optional. if not 0, add it to argument.
+	);
+
+int post_blocks_create (
+	char **res, //response
+	char *screen_name, //optional. if not 0, add it to argument.
+	tweet_id_t user_id, //optional. if not 0, add it to argument.
+	int include_entities, //optional. if not -1, add it to argument.
+	int skip_status //optional. if not -1, add it to argument.
+	);
+
+int post_blocks_destroy (
+	char **res, //response
+	char *screen_name, //optional. if not 0, add it to argument.
+	tweet_id_t user_id, //optional. if not 0, add it to argument.
+	int include_entities, //optional. if not -1, add it to argument.
+	int skip_status //optional. if not -1, add it to argument.
+	);
+
+int get_users_lookup (
+	char **res, //response
+	char *screen_name, //optional. if not 0, add it to argument.
+	char *user_id, //optional. if not 0, add it to argument.
+	int include_entities //optional. if not -1, add it to argument.
+	);
+
+int get_users_show (
+	char **res, //response
+	tweet_id_t user_id, //optional. if not 0, add it to argument.
+	char *screen_name, //optional. if not 0, add it to argument.
+	int include_entities //optional. if not -1, add it to argument.
+	);
+
+int get_users_search (
+		char *q, //required.
+	char **res, //response
+	int page, //optional. if not 0, add it to argument.
+	int count, //optional. if not 0, add it to argument.
+	int include_entities //optional. if not -1, add it to argument.
+	);
+
+int get_users_contributees (
+	char **res, //response
+	tweet_id_t user_id, //optional. if not 0, add it to argument.
+	char *screen_name, //optional. if not 0, add it to argument.
+	int include_entities, //optional. if not -1, add it to argument.
+	int skip_status //optional. if not -1, add it to argument.
+	);
+
+int get_users_contributors (
+	char **res, //response
+	tweet_id_t user_id, //optional. if not 0, add it to argument.
+	char *screen_name, //optional. if not 0, add it to argument.
+	int include_entities, //optional. if not -1, add it to argument.
+	int skip_status //optional. if not -1, add it to argument.
+	);
 
 int post_account_remove_profile_banner (
 	char **res //response
 	);
+int get_users_profile_banner (
+	char **res, //response
+	tweet_id_t user_id, //optional. if not 0, add it to argument.
+	char *screen_name //optional. if not 0, add it to argument.
+	);
+
 #endif
