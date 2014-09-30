@@ -81,3 +81,15 @@ Currently this library has wrappers for following twitter REST APIs:
 - ~~[account/update_profile_background_image](https://dev.twitter.com/docs/api/1.1/post/account/update_profile_background_image)~~
 - [account/update_profile_colors](https://dev.twitter.com/docs/api/1.1/post/account/update_profile_colors)
 - ~~[account/update_profile_image](https://dev.twitter.com/docs/api/1.1/post/account/update_profile_image)~~
+- [blocks/list](https://dev.twitter.com/docs/api/1.1/get/blocks/list)
+- [blocks/ids](https://dev.twitter.com/docs/api/1.1/get/blocks/ids)
+- [blocks/create](https://dev.twitter.com/docs/api/1.1/post/blocks/create)
+- [blocks/destroy](https://dev.twitter.com/docs/api/1.1/post/blocks/destroy)
+- [users/lookup](https://dev.twitter.com/docs/api/1.1/get/users/lookup)
+- [users/show](https://dev.twitter.com/docs/api/1.1/get/users/show)
+- [users/search](https://dev.twitter.com/docs/api/1.1/get/users/search)
+- [users/contributees](https://dev.twitter.com/docs/api/1.1/get/users/contributees)
+- [users/contributors](https://dev.twitter.com/docs/api/1.1/get/users/contributors)
+- [account/remove_profile_banner](https://dev.twitter.com/docs/api/1.1/post/account/remove_profile_banner)
+- ~~[account/update_profile_banner](https://dev.twitter.com/docs/api/1.1/post/account/update_profile_banner)~~
+- [users/profile_banner](https://dev.twitter.com/docs/api/1.1/get/users/profile_banner)

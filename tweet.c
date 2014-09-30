@@ -84,40 +84,55 @@ static int http_request(char const *u, int p, char **rep) {
 char const *api_uri_1_1 = "https://api.twitter.com/1.1/";
 
 char const * api_uri[] = {
-[STATUSES_MENTIONS_TIMELINE] = "statuses/mentions_timeline.json",
-[STATUSES_USER_TIMELINE] = "statuses/user_timeline.json",
-[STATUSES_HOME_TIMELINE]  = "statuses/home_timeline.json",
-[STATUSES_RETWEETS_OF_ME] = "statuses/retweets_of_me.json",
-[STATUSES_RETWEETS_BY_ID] = "statuses/retweets/",
-[STATUSES_SHOW_BY_ID] = "statuses/show.json",
-[STATUSES_DESTROY_BY_ID] = "statuses/destroy/",
-[STATUSES_RETWEET_BY_ID] = "statuses/retweet/",
-[STATUSES_UPDATE] = "statuses/update.json",
-[STATUSES_OEMBED] = "statuses/oembed.json",
-[STATUSES_RETWEETERS_IDS] = "statuses/retweeters/ids.json",
-[SEARCH_TWEETS] = "search/tweets.json",
-[DIRECT_MESSAGES] = "direct_messages.json",
-[DM_SENT] = "direct_messages/sent.json",
-[DM_SHOW] = "direct_messages/show.json",
-[DM_DESTROY] = "direct_messages/destroy.json ",
-[DM_NEW] = "direct_messages/new.json",
-[FS_NO_RETWEETS_IDS] = "friendships/no_retweets/ids.json",
-[FRIENDS_IDS] = "friends/ids.json",
-[FOLLOWERS_IDS] = "followers/ids.json",
-[FS_LOOKUP] = "friendships/lookup.json",
-[FS_INCOMING] = "friendships/incoming.json",
-[FS_OUTGOING] = "friendships/outgoing.json",
-[FS_CREATE] = "friendships/create.json",
-[FS_DESTROY] = "friendships/destroy.json",
-[FS_UPDATE] = "friendships/update.json",
-[FS_SHOW] = "friendships/show.json",
-[FRIENDS_LIST] = "friends/list.json",
-[FOLLOWERS_LIST] = "followers/list.json",
-[ACCOUNT_SETTINGS] = "account/settings.json",
-[ACCOUNT_VERIFY_CREDEBTIALS] = "account/verify_credentials.json",
-[ACCOUNT_UPDATE_DELIVERY_DEVICE] = "account/update_delivery_device.json",
-[ACCOUNT_UPDATE_PROFILE] = "account/update_profile.json",
-[ACCOUNT_UPDATE_PROFILE_COLORS] = "account/update_profile_colors.json",
+	[STATUSES_MENTIONS_TIMELINE] = "statuses/mentions_timeline.json",
+	[STATUSES_USER_TIMELINE] = "statuses/user_timeline.json",
+	[STATUSES_HOME_TIMELINE]  = "statuses/home_timeline.json",
+	[STATUSES_RETWEETS_OF_ME] = "statuses/retweets_of_me.json",
+	[STATUSES_RETWEETS_BY_ID] = "statuses/retweets/",
+	[STATUSES_SHOW_BY_ID] = "statuses/show.json",
+	[STATUSES_DESTROY_BY_ID] = "statuses/destroy/",
+	[STATUSES_UPDATE] = "statuses/update.json",
+	[STATUSES_RETWEET_BY_ID] = "statuses/retweet/",
+	[STATUSES_UPDATE_WITH_MEDIA] = "statuses/update_with_media.json",
+	[STATUSES_OEMBED] = "statuses/oembed.json",
+	[STATUSES_RETWEETERS_IDS] = "statuses/retweeters/ids.json",
+	[SEARCH_TWEETS] = "search/tweets.json",
+	[DIRECT_MESSAGES] = "direct_messages.json",
+	[DM_SENT] = "direct_messages/sent.json",
+	[DM_SHOW] = "direct_messages/show.json",
+	[DM_DESTROY] = "direct_messages/destroy.json ",
+	[DM_NEW] = "direct_messages/new.json",
+	[FS_NO_RETWEETS_IDS] = "friendships/no_retweets/ids.json",
+	[FRIENDS_IDS] = "friends/ids.json",
+	[FOLLOWERS_IDS] = "followers/ids.json",
+	[FS_LOOKUP] = "friendships/lookup.json",
+	[FS_INCOMING] = "friendships/incoming.json",
+	[FS_OUTGOING] = "friendships/outgoing.json",
+	[FS_CREATE] = "friendships/create.json",
+	[FS_DESTROY] = "friendships/destroy.json",
+	[FS_UPDATE] = "friendships/update.json",
+	[FS_SHOW] = "friendships/show.json",
+	[FRIENDS_LIST] = "friends/list.json",
+	[FOLLOWERS_LIST] = "followers/list.json",
+	[ACCOUNT_SETTINGS] = "account/settings.json",
+	[ACCOUNT_VERIFY_CREDEBTIALS] = "account/verify_credentials.json",
+	[ACCOUNT_UPDATE_DELIVERY_DEVICE] = "account/update_delivery_device.json",
+	[ACCOUNT_UPDATE_PROFILE] = "account/update_profile.json",
+	[ACCOUNT_UPDATE_PROFILE_BACKGROUND_IMAGE] = "account/update_profile_background_image.json",
+	[ACCOUNT_UPDATE_PROFILE_COLORS] = "account/update_profile_colors.json",
+	[ACCOUNT_UPDATE_PROFILE_IMAGE] = "account/update_profile_image.json",
+	[BLOCKS_LIST] = "blocks/list.json",
+	[BLOCKS_IDS] = "blocks/ids.json",
+	[BLOCKS_CREATE] = "blocks/create.json",
+	[BLOCKS_DESTROY] = "blocks/destroy.json",
+	[USERS_LOOKUP] = "users/lookup.json",
+	[USERS_SHOW] = "users/show.json",
+	[USERS_SEARCH] = "users/search.json",
+	[USERS_CONTRIBUTEES] = "users/contributees.json",
+	[USERS_CONTRIBUTORS] = "users/contributors.json",
+	[ACCOUNT_REMOVE_PROFILE_BANNER] = "account/remove_profile_banner.json",
+	[ACCOUNT_UPDATE_PROFILE_BANNER] = "account/update_profile_banner.json",
+	[USERS_PROFILE_BANNER] = "users/profile_banner.json",
 };
 
 inline static char **add_que_or_amp(enum APIS api, char **uri) {
@@ -494,13 +509,15 @@ static char **add_stringify_ids(enum APIS api, char **uri, int stringify_ids) {
 }
 
 static char **add_q(enum APIS api, char **uri, char *q){
-	if(q && *q) {
-		char *escaped_msg = oauth_url_escape(q);
+	if(!(q && *q)) {
+		return uri;
+	}
+	char *escaped_msg = oauth_url_escape(q);
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "q=");
 	alloc_strcat(uri, escaped_msg);
 	free(escaped_msg);escaped_msg = NULL;
-	}
+
 	return uri;
 }
 
@@ -884,7 +901,7 @@ static char **add_description(enum APIS api, char **uri, char *description){
 
 static inline char **add_color(char **uri, int color, int digit){
 	char hex[7] = {0};
-	snprintf(hex, 7, "%0*x", digit?digit:6, color);
+	snprintf(hex, sizeof(hex), "%0*x", digit?digit:6, color);
 	alloc_strcat(uri, hex);
 	return uri;
 }
@@ -940,6 +957,32 @@ static char **add_profile_text_color(enum APIS api, char **uri, long profile_tex
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "profile_text_color=");
 	add_color(uri, profile_text_color & 0x00ffffff, (profile_text_color & 0x0f000000) >> 24);
+
+	return uri;
+}
+
+static char **add_page(enum APIS api, char **uri, int page) {
+	if (!(page)) {
+		return uri;
+	}
+	char pg[8] = {0};
+	add_que_or_amp(api, uri);
+	alloc_strcat(uri, "page=");
+	snprintf(pg, sizeof(pg), "%d", page);
+	alloc_strcat(uri, pg);
+
+	return uri;
+}
+
+static char **add_count_upto_20(enum APIS api, char **uri, int count) {
+	if (!(count)) {
+		return uri;
+	}
+	char cnt[8] = {0};
+	add_que_or_amp(api, uri);
+	alloc_strcat(uri, "count=");
+	snprintf(cnt, sizeof(cnt), "%d", count<21?count:20);
+	alloc_strcat(uri, cnt);
 
 	return uri;
 }
@@ -1024,9 +1067,9 @@ Example Values: false
 }
 
 int get_statuses_user_timeline (
+	char **res, //response
 	tweet_id_t user_id, //Always specify either an user_id or screen_name when requesting a user timeline.
 	char *screen_name, //Always specify either an user_id or screen_name when requesting a user timeline.
-	char **res, //response
 	int count, //optional. if not 0, add it to argument.
 	tweet_id_t since_id, //optional. if not 0, add it to argument.
 	tweet_id_t max_id, //optional. if not 0, add it to argument.
@@ -1637,6 +1680,8 @@ Example Values: true
 
 	return ret;
 }
+
+//POST statuses/update_with_media is too difficult to implement
 
 int get_statuses_oembed (
 	tweet_id_t id, //required. It is not necessary to include both.
@@ -3386,4 +3431,594 @@ When set to either true, t or 1 statuses will not be included in the returned us
 }
 
 // POST account/update_profile_image is too difficult to implement
+
+int get_blocks_list (
+	char **res, //response
+	int include_entities, //optional. if not -1, add it to argument.
+	int skip_status, //optional. if not -1, add it to argument.
+	cursor_t cursor //optional. if not 0, add it to argument.
+	) {
+/*
+Resource URL
+https://api.twitter.com/1.1/blocks/list.json
+Parameters
+include_entities optional
+
+The entities node will not be included when set to false.
+
+Example Values: false
+
+skip_status optional
+
+When set to either true, t or 1 statuses will not be included in the returned user objects.
+
+cursor semi-optional
+
+Causes the list of blocked users to be broken into pages of no more than 5000 IDs at a time. The number of IDs returned is not guaranteed to be 5000 as suspended users are filtered out after connections are queried. If no cursor is provided, a value of -1 will be assumed, which is the first "page."
+
+The response from the API will include a previous_cursor and next_cursor to allow paging back and forth. See Using cursors to navigate collections for more information.
+
+Example Values: 12893764510938
+
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	char *uri = NULL;
+	enum APIS api = BLOCKS_LIST;
+	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri[api]);
+
+	add_include_entities(api, &uri, include_entities);
+	add_skip_status(api, &uri, skip_status);
+	add_cursor(api, &uri, cursor);
+
+	int ret = http_request(uri, GET, res);
+
+	free(uri);uri = NULL;
+
+	return ret;
+}
+
+int get_blocks_ids (
+	char **res, //response
+	int stringify_ids, //optional. if not -1, add it to argument.
+	cursor_t cursor //optional. if not 0, add it to argument.
+	) {
+/*
+Resource URL
+https://api.twitter.com/1.1/blocks/ids.json
+Parameters
+stringify_ids optional
+
+Many programming environments will not consume our ids due to their size. Provide this option to have ids returned as strings instead. Read more about Twitter IDs, JSON and Snowflake.
+
+Example Values: true
+
+cursor semi-optional
+
+Causes the list of IDs to be broken into pages of no more than 5000 IDs at a time. The number of IDs returned is not guaranteed to be 5000 as suspended users are filtered out after connections are queried. If no cursor is provided, a value of -1 will be assumed, which is the first "page."
+
+The response from the API will include a previous_cursor and next_cursor to allow paging back and forth. See Using cursors to navigate collections for more information.
+
+Example Values: 12893764510938
+
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	char *uri = NULL;
+	enum APIS api = BLOCKS_IDS;
+	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri[api]);
+
+	add_stringify_ids(api, &uri, stringify_ids);
+	add_cursor(api, &uri, cursor);
+
+	int ret = http_request(uri, GET, res);
+
+	free(uri);uri = NULL;
+
+	return ret;
+}
+
+int post_blocks_create (
+	char **res, //response
+	char *screen_name, //optional. if not 0, add it to argument.
+	tweet_id_t user_id, //optional. if not 0, add it to argument.
+	int include_entities, //optional. if not -1, add it to argument.
+	int skip_status //optional. if not -1, add it to argument.
+	) {
+/*
+Resource URL
+https://api.twitter.com/1.1/blocks/create.json
+Parameters
+
+Either screen_name or user_id must be provided.
+screen_name optional
+
+The screen name of the potentially blocked user. Helpful for disambiguating when a valid screen name is also a user ID.
+
+Example Values: noradio
+user_id optional
+
+The ID of the potentially blocked user. Helpful for disambiguating when a valid user ID is also a valid screen name.
+
+Example Values: 12345
+include_entities optional
+
+The entities node will not be included when set to false.
+
+Example Values: false
+skip_status optional
+
+When set to either true, t or 1 statuses will not be included in the returned user objects.
+
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	char *uri = NULL;
+	enum APIS api = BLOCKS_CREATE;
+	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri[api]);
+
+	add_screen_name(api, &uri, screen_name);
+	add_user_id(api, &uri, user_id);
+	add_include_entities(api, &uri, include_entities);
+	add_skip_status(api, &uri, skip_status);
+
+	int ret = http_request(uri, POST, res);
+
+	free(uri);uri = NULL;
+
+	return ret;
+}
+
+int post_blocks_destroy (
+	char **res, //response
+	char *screen_name, //optional. if not 0, add it to argument.
+	tweet_id_t user_id, //optional. if not 0, add it to argument.
+	int include_entities, //optional. if not -1, add it to argument.
+	int skip_status //optional. if not -1, add it to argument.
+	) {
+/*
+Resource URL
+https://api.twitter.com/1.1/blocks/destroy.json
+Parameters
+
+One of screen_name or id must be provided.
+
+screen_name optional
+
+The screen name of the potentially blocked user. Helpful for disambiguating when a valid screen name is also a user ID.
+
+Example Values: noradio
+
+user_id optional
+
+The ID of the potentially blocked user. Helpful for disambiguating when a valid user ID is also a valid screen name.
+
+Example Values: 12345
+
+include_entities optional
+
+The entities node will not be included when set to false.
+
+Example Values: false
+
+skip_status optional
+
+When set to either true, t or 1 statuses will not be included in the returned user objects.
+
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	char *uri = NULL;
+	enum APIS api = BLOCKS_DESTROY;
+	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri[api]);
+
+	add_screen_name(api, &uri, screen_name);
+	add_user_id(api, &uri, user_id);
+	add_include_entities(api, &uri, include_entities);
+	add_skip_status(api, &uri, skip_status);
+
+	int ret = http_request(uri, POST, res);
+
+	free(uri);uri = NULL;
+
+	return ret;
+}
+
+int get_users_lookup (
+	char **res, //response
+	char *screen_name, //optional. if not 0, add it to argument.
+	char *user_id, //optional. if not 0, add it to argument.
+	int include_entities //optional. if not -1, add it to argument.
+	) {
+/*
+Resource URL
+https://api.twitter.com/1.1/users/lookup.json
+Parameters
+screen_name optional
+
+A comma separated list of screen names, up to 100 are allowed in a single request. You are strongly encouraged to use a POST for larger (up to 100 screen names) requests.
+
+Example Values: twitterapi,twitter
+
+user_id optional
+
+A comma separated list of user IDs, up to 100 are allowed in a single request. You are strongly encouraged to use a POST for larger requests.
+
+Example Values: 783214,6253282
+
+include_entities optional
+
+The entities node that may appear within embedded statuses will be disincluded when set to false.
+
+Example Values: false
+
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	char *uri = NULL;
+	enum APIS api = USERS_LOOKUP;
+	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri[api]);
+
+	add_screen_name(api, &uri, screen_name);
+	add_user_id_str(api, &uri, user_id);
+	add_include_entities(api, &uri, include_entities);
+
+	int ret = http_request(uri, GET, res);
+
+	free(uri);uri = NULL;
+
+	return ret;
+}
+
+int get_users_show (
+	char **res, //response
+	tweet_id_t user_id, //optional. if not 0, add it to argument.
+	char *screen_name, //optional. if not 0, add it to argument.
+	int include_entities //optional. if not -1, add it to argument.
+	) {
+/*
+Resource URL
+https://api.twitter.com/1.1/users/show.json
+Parameters
+
+user_id required
+
+The ID of the user for whom to return results for. Either an id or screen_name is required for this method.
+
+Example Values: 12345
+
+screen_name required
+
+The screen name of the user for whom to return results for. Either a id or screen_name is required for this method.
+
+Example Values: noradio
+
+include_entities optional
+
+The entities node will be disincluded when set to false.
+
+Example Values: false
+
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	char *uri = NULL;
+	enum APIS api = USERS_SHOW;
+	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri[api]);
+
+	add_user_id(api, &uri, user_id);
+	add_screen_name(api, &uri, screen_name);
+	add_include_entities(api, &uri, include_entities);
+
+	int ret = http_request(uri, GET, res);
+
+	free(uri);uri = NULL;
+
+	return ret;
+}
+
+int get_users_search (
+		char *q, //required.
+	char **res, //response
+	int page, //optional. if not 0, add it to argument.
+	int count, //optional. if not 0, add it to argument.
+	int include_entities //optional. if not -1, add it to argument.
+	) {
+/*
+Resource URL
+https://api.twitter.com/1.1/users/search.json
+Parameters
+q required
+
+The search query to run against people search.
+
+Example Values: Twitter%20API
+
+page optional
+
+Specifies the page of results to retrieve.
+
+Example Values: 3
+
+count optional
+
+The number of potential user results to retrieve per page. This value has a maximum of 20.
+
+Example Values: 5
+
+include_entities optional
+
+The entities node will be disincluded from embedded tweet objects when set to false.
+
+Example Values: false
+
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	char *uri = NULL;
+	enum APIS api = USERS_SEARCH;
+	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri[api]);
+
+	add_q(api, &uri, q);
+	add_page(api, &uri, page);
+	add_count_upto_20(api, &uri, count);
+	add_include_entities(api, &uri, include_entities);
+
+	int ret = http_request(uri, GET, res);
+
+	free(uri);uri = NULL;
+
+	return ret;
+}
+
+int get_users_contributees (
+	char **res, //response
+	tweet_id_t user_id, //optional. if not 0, add it to argument.
+	char *screen_name, //optional. if not 0, add it to argument.
+	int include_entities, //optional. if not -1, add it to argument.
+	int skip_status //optional. if not -1, add it to argument.
+	) {
+/*
+Resource URL
+https://api.twitter.com/1.1/users/contributees.json
+Parameters
+
+A user_id or screen_name is required.
+user_id optional
+
+The ID of the user for whom to return results for. Helpful for disambiguating when a valid user ID is also a valid screen name.
+screen_name optional
+
+The screen name of the user for whom to return results for.
+include_entities optional
+
+The entities node will be disincluded when set to false.
+
+Example Values: false
+skip_status optional
+
+When set to either true, t or 1 statuses will not be included in the returned user objects.
+
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	char *uri = NULL;
+	enum APIS api = USERS_CONTRIBUTEES;
+	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri[api]);
+
+	add_user_id(api, &uri, user_id);
+	add_screen_name(api, &uri, screen_name);
+	add_include_entities(api, &uri, include_entities);
+	add_skip_status(api, &uri, skip_status);
+
+	int ret = http_request(uri, GET, res);
+
+	free(uri);uri = NULL;
+
+	return ret;
+}
+
+int get_users_contributors (
+	char **res, //response
+	tweet_id_t user_id, //optional. if not 0, add it to argument.
+	char *screen_name, //optional. if not 0, add it to argument.
+	int include_entities, //optional. if not -1, add it to argument.
+	int skip_status //optional. if not -1, add it to argument.
+	) {
+/*
+Resource URL
+https://api.twitter.com/1.1/users/contributors.json
+Parameters
+
+A user_id or screen_name is required.
+
+user_id optional
+
+The ID of the user for whom to return results for.
+
+screen_name optional
+
+The screen name of the user for whom to return results for.
+
+include_entities optional
+
+The entities node will be disincluded when set to false.
+
+Example Values: false
+
+skip_status optional
+
+When set to either true, t or 1 statuses will not be included in the returned user objects.
+
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	char *uri = NULL;
+	enum APIS api = USERS_CONTRIBUTORS;
+	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri[api]);
+
+	add_user_id(api, &uri, user_id);
+	add_screen_name(api, &uri, screen_name);
+	add_include_entities(api, &uri, include_entities);
+	add_skip_status(api, &uri, skip_status);
+
+	int ret = http_request(uri, GET, res);
+
+	free(uri);uri = NULL;
+
+	return ret;
+}
+
+int post_account_remove_profile_banner (
+	char **res //response
+	) {
+/*
+Resource URL
+https://api.twitter.com/1.1/account/remove_profile_banner.json
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	char *uri = NULL;
+	enum APIS api = ACCOUNT_REMOVE_PROFILE_BANNER;
+	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri[api]);
+
+	int ret = http_request(uri, POST, res);
+
+	free(uri);uri = NULL;
+
+	return ret;
+}
+
+// POST account/update_profile_banner is too difficult to implement
+
+int get_users_profile_banner (
+	char **res, //response
+	tweet_id_t user_id, //optional. if not 0, add it to argument.
+	char *screen_name //optional. if not 0, add it to argument.
+	) {
+/*
+Resource URL
+https://api.twitter.com/1.1/users/profile_banner.json
+Parameters
+
+Always specify either an user_id or screen_name when requesting this method.
+
+user_id optional
+
+The ID of the user for whom to return results for. Helpful for disambiguating when a valid user ID is also a valid screen name.
+
+Example Values: 12345
+
+Note:: Specifies the ID of the user to befriend. Helpful for disambiguating when a valid user ID is also a valid screen name.
+
+screen_name optional
+
+The screen name of the user for whom to return results for. Helpful for disambiguating when a valid screen name is also a user ID.
+
+Example Values: noradio
+
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	char *uri = NULL;
+	enum APIS api = USERS_PROFILE_BANNER;
+	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri[api]);
+
+	add_user_id(api, &uri, user_id);
+	add_screen_name(api, &uri, screen_name);
+
+	int ret = http_request(uri, POST, res);
+
+	free(uri);uri = NULL;
+
+	return ret;
+}
 

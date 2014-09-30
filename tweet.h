@@ -2,7 +2,7 @@
 #define __TWEET_H
 
 typedef unsigned long long int tweet_id_t;
-typedef unsigned long long cursor_t;
+typedef long long int cursor_t;
 
 enum {
 	GET,
@@ -19,6 +19,7 @@ enum APIS {
 	STATUSES_DESTROY_BY_ID,
 	STATUSES_UPDATE,
 	STATUSES_RETWEET_BY_ID,
+	STATUSES_UPDATE_WITH_MEDIA,
 	STATUSES_OEMBED,
 	STATUSES_RETWEETERS_IDS,
 	SEARCH_TWEETS,
@@ -43,7 +44,21 @@ enum APIS {
 	ACCOUNT_VERIFY_CREDEBTIALS,
 	ACCOUNT_UPDATE_DELIVERY_DEVICE,
 	ACCOUNT_UPDATE_PROFILE,
+	ACCOUNT_UPDATE_PROFILE_BACKGROUND_IMAGE,
 	ACCOUNT_UPDATE_PROFILE_COLORS,
+	ACCOUNT_UPDATE_PROFILE_IMAGE,
+	BLOCKS_LIST,
+	BLOCKS_IDS,
+	BLOCKS_CREATE,
+	BLOCKS_DESTROY,
+	USERS_LOOKUP,
+	USERS_SHOW,
+	USERS_SEARCH,
+	USERS_CONTRIBUTEES,
+	USERS_CONTRIBUTORS,
+	ACCOUNT_REMOVE_PROFILE_BANNER,
+	ACCOUNT_UPDATE_PROFILE_BANNER,
+	USERS_PROFILE_BANNER,
 	NUM_OF_APIS
 };
 
@@ -100,9 +115,9 @@ int get_statuses_mentions_timeline (
 	);
 
 int get_statuses_user_timeline (
+	char **res, //response
 	tweet_id_t user_id, //Always specify either an user_id or screen_name when requesting a user timeline.
 	char *screen_name, //Always specify either an user_id or screen_name when requesting a user timeline.
-	char **res, //response
 	int count, //optional. if not 0, add it to argument.
 	tweet_id_t since_id, //optional. if not 0, add it to argument.
 	tweet_id_t max_id, //optional. if not 0, add it to argument.
@@ -379,5 +394,10 @@ int post_account_update_profile_colors (
 	long profile_text_color, //optional. if not -1, add it to argument.
 	int include_entities, //optional. if not -1, add it to argument.
 	int skip_status //optional. if not -1, add it to argument.
+	);
+
+
+int post_account_remove_profile_banner (
+	char **res //response
 	);
 #endif
