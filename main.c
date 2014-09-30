@@ -7,7 +7,7 @@
 #include <oauth.h>
 #include <curl/curl.h>
 
-#include "tweet.h"
+#include "include/tweet.h"
 
 int main(void)
 {
