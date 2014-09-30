@@ -1,16 +1,19 @@
 CC		:= gcc
 
 CFLAGS		:= -ansi -std=c99 -W -Wall -Werror -O2
-LDFLAGS		:= -lcurl -loauth -lcrypto
+LDFLAGS		:= -lcurl -loauth #-lcrypto
 
-SOURCES_DIR	:= .
-SOURCES		:= $(wildcard $(SOURCES_DIR)/*.c)
+SRC_DIR		:= ./src
+SRCS			:= $(notdir $(wildcard $(SRC_DIR)/*.c))
+
+INC_DIR		:= ./include
+INCS		:= $(addprefix $(INC_DIR)/, $(SRCS:.c=.h))
 
 OBJ_DIR		:= ./obj
-OBJS		:= $(addprefix $(OBJ_DIR)/, $(subst ./,,$(patsubst %.c,%.o,$(SOURCES))))
+OBJS		:= $(addprefix $(OBJ_DIR)/, $(SRCS:.c=.o))
 
 DEP_DIR		:= ./obj
-DEPENDS		:= $(addprefix $(DEP_DIR)/, $(subst ./,,$(patsubst %.c,%.d,$(SOURCES))))
+DEPS		:= $(addprefix $(DEP_DIR)/, $(SRCS:.c=.d))
 
 TARGET_DIR	:= ./bin
 TARGET		:= $(TARGET_DIR)/tweet 
@@ -22,17 +25,17 @@ all : $(TARGET)
 run : $(TARGET)
 	$(TARGET)
 
--include $(DEPENDS)
+#-include $(DEPS)
 
 
-$(TARGET) : $(OBJS)
+$(TARGET) : $(OBJS) main.c
 	@[ -d `dirname $@` ] || mkdir -p `dirname $@`
-	$(CC) $(OBJS) $(CFLAGS) $(INCLUDE) $(LDFLAGS) -o $(TARGET)
+	$(CC) main.c $(OBJS) $(LDFLAGS) -o $(TARGET)
 
 
-$(OBJ_DIR)/%.o : $(SOURCES_DIR)/%.c Makefile
+$(OBJ_DIR)/%.o : $(SRC_DIR)/%.c Makefile
 	@[ -d `dirname $@` ] || mkdir -p `dirname $@`
-	$(CC) -c -MMD -MP $< $(CFLAGS) $(INCLUDE) $(LDFLAGS) -o $@ 
+	$(CC) -c -MMD -MP $< $(CFLAGS) -I$(INC_DIR) -o $@
 
 
 clean :		
