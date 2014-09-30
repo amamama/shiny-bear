@@ -1,0 +1,8 @@
+bin/
+obj/
+
+*~
+.*.swp
+*.o
+*.d
+core
