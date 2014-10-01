@@ -13,22 +13,94 @@
 #include "tweet.h"
 #include "utils.h"
 
-static union KEYS *keys = NULL;
+typedef struct info_list_struct {
+	struct info_list_struct *next;
+	oauth_keys keys;
+	bool isopened[NUM_OF_STREAM];
+	CURL *stream_easy[NUM_OF_STREAM];
+	CURLM *stream_multi[NUM_OF_STREAM];
+} info_list;
 
-union KEYS *register_keys(union KEYS *k) {
-	return keys = k;
+static info_list *info = NULL;
+static info_list *current_info = NULL;
+
+static info_list *init_info_list (info_list *info) {
+	info->next = NULL;
+	info->keys = (oauth_keys){NULL, NULL, NULL, NULL};
+	for (int i = 0; i < NUM_OF_STREAM; i++) {
+		info->isopened[i] = false;
+		info->stream_easy[i] =  NULL;
+		info->stream_multi[i] =  NULL;
+	}
+
+	return info;
+}
+
+oauth_keys register_keys(oauth_keys keys) {
+	if (!info) {
+		info_list *tmp = (info_list *)malloc(sizeof(info_list));
+		if (!tmp) {
+			fprintf(stderr, "malloc failed\n");
+		}
+		info = tmp;
+		init_info_list(tmp);
+		tmp->keys.c_key = keys.c_key;
+		tmp->keys.c_sec = keys.c_sec;
+		tmp->keys.t_key = keys.t_key;
+		tmp->keys.t_sec = keys.t_sec;
+	}
+
+	bool isregistered = false;
+	for (info_list *list = info; list; list = list->next) {
+		if (!strcmp(list->keys.c_key, keys.c_key)) {
+			current_info = list;
+			isregistered = true;
+			break;
+		}
+	}
+
+	if (!isregistered) {
+		info_list *tmp = (info_list *)malloc(sizeof(info_list));
+		if (!tmp) {
+			fprintf(stderr, "malloc failed\n");
+		}
+		info->next = tmp;
+		init_info_list(tmp);
+		tmp->keys.c_key = keys.c_key;
+		tmp->keys.c_sec = keys.c_sec;
+		tmp->keys.t_key = keys.t_key;
+		tmp->keys.t_sec = keys.t_sec;
+		current_info = tmp;
+	}
+
+	return keys;
 }
 
 int check_keys(void) {
-	return keys->keys_array[0]&&keys->keys_array[1]&&keys->keys_array[2]&&keys->keys_array[3];
+	return current_info->keys.c_key&&current_info->keys.c_sec&&current_info->keys.t_key&&current_info->keys.t_sec;
 }
 
-int bear_init(union KEYS *k) {
-	register_keys(k);
+oauth_keys current_keys(void) {
+	return current_info->keys;
+}
+
+int bear_init(char const *c_key, char const *c_sec, char const *t_key, char const *t_sec) {
+	register_keys((oauth_keys){c_key, c_sec, t_key, t_sec});
 	return curl_global_init(CURL_GLOBAL_DEFAULT);
 }
 
 int bear_cleanup(void) {
+	for (info_list *list = info, *tmp; list; ) {
+		tmp = list;
+		for (int i = 0; i < NUM_OF_STREAM; i++) {
+			if (list->isopened[i]) {
+				curl_easy_cleanup(list->stream_easy[i]);
+				curl_multi_cleanup(list->stream_multi[i]);
+			}
+		}
+		list = list->next;
+		free(tmp);
+	}
 	curl_global_cleanup();
 	return 0;
 }
@@ -48,19 +120,18 @@ static int http_request(char const *u, int p, char **rep) {
 	if (rep && *rep) {
 		memset(*rep,0,strlen(*rep));
 	}
-	CURL *curl;
+	CURL *curl = curl_easy_init();
 	CURLcode ret;
-	curl = curl_easy_init();
 	if (!curl) {
 		fprintf(stderr, "failed to initialize curl\n");
 	}
 	char *request = NULL;
 	char *post = NULL;
 	if (p) {
-		request = oauth_sign_url2(u, &post, OA_HMAC, NULL, keys->keys_struct.c_key, keys->keys_struct.c_sec, keys->keys_struct.t_key, keys->keys_struct.t_sec);
+		request = oauth_sign_url2(u, &post, OA_HMAC, NULL, current_info->keys.c_key, current_info->keys.c_sec, current_info->keys.t_key, current_info->keys.t_sec);
 		curl_easy_setopt (curl, CURLOPT_POSTFIELDS, (void *) post);
 	} else {
-		request = oauth_sign_url2(u, NULL, OA_HMAC, NULL, keys->keys_struct.c_key, keys->keys_struct.c_sec, keys->keys_struct.t_key, keys->keys_struct.t_sec);
+		request = oauth_sign_url2(u, NULL, OA_HMAC, NULL, current_info->keys.c_key, current_info->keys.c_sec, current_info->keys.t_key, current_info->keys.t_sec);
 	}
 	curl_easy_setopt (curl, CURLOPT_URL, request);
 	//is it good? i dont know.
@@ -81,7 +152,70 @@ static int http_request(char const *u, int p, char **rep) {
 	return ret;
 }
 
+static CURL *open_stream(char const *u, int p) {
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	CURL *curl = curl_easy_init();
+	if (!curl) {
+		fprintf(stderr, "failed to initialize curl\n");
+	}
+	char *request = NULL;
+	char *post = NULL;
+	if (p) {
+		request = oauth_sign_url2(u, &post, OA_HMAC, NULL, current_info->keys.c_key, current_info->keys.c_sec, current_info->keys.t_key, current_info->keys.t_sec);
+		curl_easy_setopt (curl, CURLOPT_POSTFIELDS, (void *) post);
+	} else {
+		request = oauth_sign_url2(u, NULL, OA_HMAC, NULL, current_info->keys.c_key, current_info->keys.c_sec, current_info->keys.t_key, current_info->keys.t_sec);
+	}
+	curl_easy_setopt (curl, CURLOPT_URL, request);
+	//is it good? i dont know.
+	//curl_easy_setopt (curl, CURLOPT_SSL_VERIFYPEER, 0L);
+
+	free(request);request = NULL;
+	free(post);post = NULL;
+
+	return curl;
+}
+
+static CURLM *connect_stream(CURL *curl) {
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	CURLM *multi = curl_multi_init();
+	curl_multi_add_handle(multi, curl);
+
+	return multi;
+}
+
+static int stream_request(CURLM *curlm, char **rep, int *still_running, long *timeo) {
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (rep && *rep) {
+		memset(*rep,0,strlen(*rep));
+	}
+	CURLcode ret;
+	//if (rep ) {
+	//	curl_easy_setopt (curl, CURLOPT_WRITEDATA, (void *) rep);
+	//	curl_easy_setopt (curl, CURLOPT_WRITEFUNCTION, write_data);
+	//}
+
+	ret = curl_multi_perform (curlm, still_running);
+	curl_multi_timeout(curlm, timeo);
+	if (ret != CURLE_OK) {
+		fprintf (stderr, "curl_multi_perform() failed: %s\n", curl_multi_strerror (ret));
+	}
+
+	return ret;
+}
+
 char const *api_uri_1_1 = "https://api.twitter.com/1.1/";
+char const *stream_uri_1_1 = "https://stream.twitter.com/1.1/";
+char const *userstream_uri_1_1 = "https://userstream.twitter.com/1.1/";
 
 char const * api_uri[] = {
 	[STATUSES_MENTIONS_TIMELINE] = "statuses/mentions_timeline.json",
@@ -135,12 +269,23 @@ char const * api_uri[] = {
 	[USERS_PROFILE_BANNER] = "users/profile_banner.json",
 };
 
-inline static char **add_que_or_amp(enum APIS api, char **uri) {
+const char *stream_uri[] = {
+	[STATUSES_FILTER] = "statuses/filter.json",
+	[STATUSES_SAMPLE] = "statuses/sample.json",
+	[USER] = "user.json",
+};
+
+inline static char **add_que_or_amp(api_enum api, char **uri) {
 	alloc_strcat(uri, strlen(*uri)==(strlen(api_uri_1_1) + strlen(api_uri[api]))?"?":"&");
 	return uri;
 }
 
-static char **add_count(enum APIS api, char **uri, int count) {
+inline static char **add_que_or_amp_stream(stream_enum stream, char **uri) {
+	alloc_strcat(uri, strlen(*uri)==(strlen(stream_uri_1_1) + strlen(stream_uri[stream]))?"?":"&");
+	return uri;
+}
+
+static char **add_count(api_enum api, char **uri, int count) {
 	if (!(count)) {
 		return uri;
 	}
@@ -153,7 +298,7 @@ static char **add_count(enum APIS api, char **uri, int count) {
 	return uri;
 }
 
-static char **add_id(enum APIS api, char **uri, tweet_id_t id) {
+static char **add_id(api_enum api, char **uri, tweet_id_t id) {
 	if (!(id)) {
 		return uri;
 	}
@@ -166,7 +311,7 @@ static char **add_id(enum APIS api, char **uri, tweet_id_t id) {
 	return uri;
 }
 
-static char **add_since_id(enum APIS api, char **uri, tweet_id_t since_id) {
+static char **add_since_id(api_enum api, char **uri, tweet_id_t since_id) {
 	if (!(since_id)) {
 		return uri;
 	}
@@ -179,7 +324,7 @@ static char **add_since_id(enum APIS api, char **uri, tweet_id_t since_id) {
 	return uri;
 }
 
-static char **add_max_id(enum APIS api, char **uri, tweet_id_t max_id) {
+static char **add_max_id(api_enum api, char **uri, tweet_id_t max_id) {
 	if (!(max_id)) {
 		return uri;
 	}
@@ -192,7 +337,7 @@ static char **add_max_id(enum APIS api, char **uri, tweet_id_t max_id) {
 	return uri;
 }
 
-static char **add_trim_user(enum APIS api, char **uri, int trim_user) {
+static char **add_trim_user(api_enum api, char **uri, int trim_user) {
 	if (!(trim_user != -1)) {
 		return uri;
 	}
@@ -205,7 +350,7 @@ static char **add_trim_user(enum APIS api, char **uri, int trim_user) {
 	return uri;
 }
 
-static char **add_contributor_details(enum APIS api, char **uri, int contributor_details) {
+static char **add_contributor_details(api_enum api, char **uri, int contributor_details) {
 	if (!(contributor_details != -1)) {
 		return uri;
 	}
@@ -218,7 +363,7 @@ static char **add_contributor_details(enum APIS api, char **uri, int contributor
 	return uri;
 }
 
-static char **add_include_entities(enum APIS api, char **uri, int include_entities) {
+static char **add_include_entities(api_enum api, char **uri, int include_entities) {
 	if (!(include_entities != -1)) {
 		return uri;
 	}
@@ -231,7 +376,7 @@ static char **add_include_entities(enum APIS api, char **uri, int include_entiti
 	return uri;
 }
 
-static char **add_include_rts(enum APIS api, char **uri, int include_rts, int count) {
+static char **add_include_rts(api_enum api, char **uri, int include_rts, int count) {
 	if (!(count || (include_rts != -1))) {
 		return uri;
 	}
@@ -244,7 +389,7 @@ static char **add_include_rts(enum APIS api, char **uri, int include_rts, int co
 	return uri;
 }
 
-static char **add_user_id(enum APIS api, char **uri, tweet_id_t user_id) {
+static char **add_user_id(api_enum api, char **uri, tweet_id_t user_id) {
 	if (!(user_id)) {
 		return uri;
 	}
@@ -257,7 +402,7 @@ static char **add_user_id(enum APIS api, char **uri, tweet_id_t user_id) {
 	return uri;
 }
 
-static char **add_screen_name(enum APIS api, char **uri, char *screen_name) {
+static char **add_screen_name(api_enum api, char **uri, char *screen_name) {
 	if (!(screen_name && *screen_name)) {
 		return uri;
 	}
@@ -268,7 +413,7 @@ static char **add_screen_name(enum APIS api, char **uri, char *screen_name) {
 	return uri;
 }
 
-static char **add_exclude_replies(enum APIS api, char **uri, int exclude_replies) {
+static char **add_exclude_replies(api_enum api, char **uri, int exclude_replies) {
 	if (!(exclude_replies != -1)) {
 		return uri;
 	}
@@ -281,7 +426,7 @@ static char **add_exclude_replies(enum APIS api, char **uri, int exclude_replies
 	return uri;
 }
 
-static char **add_include_user_entities(enum APIS api, char **uri, int include_user_entities) {
+static char **add_include_user_entities(api_enum api, char **uri, int include_user_entities) {
 	if (!(include_user_entities != -1)) {
 		return uri;
 	}
@@ -294,7 +439,7 @@ static char **add_include_user_entities(enum APIS api, char **uri, int include_u
 	return uri;
 }
 
-static char **add_include_my_retweet(enum APIS api, char **uri, int include_my_retweet) {
+static char **add_include_my_retweet(api_enum api, char **uri, int include_my_retweet) {
 	if (!(include_my_retweet != -1)) {
 		return uri;
 	}
@@ -307,7 +452,7 @@ static char **add_include_my_retweet(enum APIS api, char **uri, int include_my_r
 	return uri;
 }
 
-static char **add_status(enum APIS api, char **uri, char *status) {
+static char **add_status(api_enum api, char **uri, char *status) {
 	if (!(status && *status)) {
 		return uri;
 	}
@@ -326,7 +471,7 @@ static char **add_status(enum APIS api, char **uri, char *status) {
 	return uri;
 }
 
-static char **add_in_reply_to_status_id(enum APIS api, char **uri, tweet_id_t in_reply_to_status_id) {
+static char **add_in_reply_to_status_id(api_enum api, char **uri, tweet_id_t in_reply_to_status_id) {
 	if (!(in_reply_to_status_id)) {
 		return uri;
 	}
@@ -339,7 +484,7 @@ static char **add_in_reply_to_status_id(enum APIS api, char **uri, tweet_id_t in
 	return uri;
 }
 
-static char **add_coods(enum APIS api, char **uri, struct GEOCODE l_l) {
+static char **add_coods(api_enum api, char **uri, struct GEOCODE l_l) {
 	if (!((int)(fabs(l_l.latitude)) < 90 && (int)(fabs(l_l.longitude)) < 180)) {
 		return uri;
 	}
@@ -357,7 +502,7 @@ static char **add_coods(enum APIS api, char **uri, struct GEOCODE l_l) {
 	return uri;
 }
 
-static char **add_place_id(enum APIS api, char **uri, tweet_id_t place_id) {
+static char **add_place_id(api_enum api, char **uri, tweet_id_t place_id) {
 	if (!(place_id)) {
 		return uri;
 	}
@@ -370,7 +515,7 @@ static char **add_place_id(enum APIS api, char **uri, tweet_id_t place_id) {
 	return uri;
 }
 
-static char **add_display_coordinates(enum APIS api, char **uri, int display_coordinates) {
+static char **add_display_coordinates(api_enum api, char **uri, int display_coordinates) {
 	if (!(display_coordinates != -1)) {
 		return uri;
 	}
@@ -383,7 +528,7 @@ static char **add_display_coordinates(enum APIS api, char **uri, int display_coo
 	return uri;
 }
 
-static char **add_url(enum APIS api, char **uri, char *url) {
+static char **add_url(api_enum api, char **uri, char *url) {
 	if (!(url && *url)) {
 		return uri;
 	}
@@ -396,7 +541,7 @@ static char **add_url(enum APIS api, char **uri, char *url) {
 	return uri;
 }
 
-static char **add_maxwidth(enum APIS api, char **uri, int maxwidth) {
+static char **add_maxwidth(api_enum api, char **uri, int maxwidth) {
 	if (!(249 < maxwidth && maxwidth < 551)) {
 		return uri;
 	}
@@ -409,7 +554,7 @@ static char **add_maxwidth(enum APIS api, char **uri, int maxwidth) {
 	return uri;
 }
 
-static char **add_hide_media(enum APIS api, char **uri, int hide_media) {
+static char **add_hide_media(api_enum api, char **uri, int hide_media) {
 	if (!(hide_media != -1)) {
 		return uri;
 	}
@@ -422,7 +567,7 @@ static char **add_hide_media(enum APIS api, char **uri, int hide_media) {
 	return uri;
 }
 
-static char **add_hide_thread(enum APIS api, char **uri, int hide_thread) {
+static char **add_hide_thread(api_enum api, char **uri, int hide_thread) {
 	if (!(hide_thread != -1)) {
 		return uri;
 	}
@@ -435,7 +580,7 @@ static char **add_hide_thread(enum APIS api, char **uri, int hide_thread) {
 	return uri;
 }
 
-static char **add_omit_script(enum APIS api, char **uri, int omit_script) {
+static char **add_omit_script(api_enum api, char **uri, int omit_script) {
 	if (!(omit_script != -1)) {
 		return uri;
 	}
@@ -448,7 +593,7 @@ static char **add_omit_script(enum APIS api, char **uri, int omit_script) {
 	return uri;
 }
 
-static char **add_align(enum APIS api, char **uri, enum ALIGN align) {
+static char **add_align(api_enum api, char **uri, enum ALIGN align) {
 	if (!(align < (CENTER + 1))) {
 		return uri;
 	}
@@ -460,7 +605,7 @@ static char **add_align(enum APIS api, char **uri, enum ALIGN align) {
 	return uri;
 }
 
-static char **add_related(enum APIS api, char **uri, char *related) {
+static char **add_related(api_enum api, char **uri, char *related) {
 	if (!(related && *related)) {
 		return uri;
 	}
@@ -471,7 +616,7 @@ static char **add_related(enum APIS api, char **uri, char *related) {
 	return uri;
 }
 
-static char **add_lang(enum APIS api, char **uri, char *lang) {
+static char **add_lang(api_enum api, char **uri, char *lang) {
 	if (!(lang && *lang)) {
 		return uri;
 	}
@@ -482,7 +627,7 @@ static char **add_lang(enum APIS api, char **uri, char *lang) {
 	return uri;
 }
 
-static char **add_cursor(enum APIS api, char **uri, cursor_t cursor) {
+static char **add_cursor(api_enum api, char **uri, cursor_t cursor) {
 	if (!(cursor)) {
 		return uri;
 	}
@@ -495,7 +640,7 @@ static char **add_cursor(enum APIS api, char **uri, cursor_t cursor) {
 	return uri;
 }
 
-static char **add_stringify_ids(enum APIS api, char **uri, int stringify_ids) {
+static char **add_stringify_ids(api_enum api, char **uri, int stringify_ids) {
 	if (!(stringify_ids != -1)) {
 		return uri;
 	}
@@ -508,7 +653,7 @@ static char **add_stringify_ids(enum APIS api, char **uri, int stringify_ids) {
 	return uri;
 }
 
-static char **add_q(enum APIS api, char **uri, char *q){
+static char **add_q(api_enum api, char **uri, char *q){
 	if(!(q && *q)) {
 		return uri;
 	}
@@ -521,7 +666,7 @@ static char **add_q(enum APIS api, char **uri, char *q){
 	return uri;
 }
 
-static char **add_geocode(enum APIS api, char **uri, struct GEOCODE geocode) {
+static char **add_geocode(api_enum api, char **uri, struct GEOCODE geocode) {
 	if (!((int)(fabs(geocode.latitude)) < 90 && (int)(fabs(geocode.longitude)) < 180 && geocode.radius != 0 && geocode.unit && *geocode.unit)) {
 		return uri;
 	}
@@ -541,7 +686,7 @@ static char **add_geocode(enum APIS api, char **uri, struct GEOCODE geocode) {
 	return uri;
 }
 
-static char **add_locale(enum APIS api, char **uri, char *locale) {
+static char **add_locale(api_enum api, char **uri, char *locale) {
 	if (!(locale && *locale)) {
 		return uri;
 	}
@@ -552,7 +697,7 @@ static char **add_locale(enum APIS api, char **uri, char *locale) {
 	return uri;
 }
 
-static char **add_result_type(enum APIS api, char **uri, int result_type) {
+static char **add_result_type(api_enum api, char **uri, int result_type) {
 	if (!(result_type)) {
 		return uri;
 	}
@@ -577,7 +722,7 @@ static char **add_result_type(enum APIS api, char **uri, int result_type) {
 	return uri;
 }
 
-static char **add_until(enum APIS api, char **uri, char *until) {
+static char **add_until(api_enum api, char **uri, char *until) {
 	if (!(until && *until)) {
 		return uri;
 	}
@@ -588,7 +733,7 @@ static char **add_until(enum APIS api, char **uri, char *until) {
 	return uri;
 }
 
-static char **add_callback(enum APIS api, char **uri, char *callback) {
+static char **add_callback(api_enum api, char **uri, char *callback) {
 	if (!(callback && *callback)) {
 		return uri;
 	}
@@ -599,7 +744,7 @@ static char **add_callback(enum APIS api, char **uri, char *callback) {
 	return uri;
 }
 
-static char **add_skip_status(enum APIS api, char **uri, int skip_status) {
+static char **add_skip_status(api_enum api, char **uri, int skip_status) {
 	if (!(skip_status != -1)) {
 		return uri;
 	}
@@ -612,7 +757,7 @@ static char **add_skip_status(enum APIS api, char **uri, int skip_status) {
 	return uri;
 }
 
-static char **add_pages(enum APIS api, char **uri, int pages) {
+static char **add_pages(api_enum api, char **uri, int pages) {
 	if (!(pages)) {
 		return uri;
 	}
@@ -625,7 +770,7 @@ static char **add_pages(enum APIS api, char **uri, int pages) {
 	return uri;
 }
 
-static char **add_text(enum APIS api, char **uri, char *text) {
+static char **add_text(api_enum api, char **uri, char *text) {
 	if (!(text && *text)) {
 		return uri;
 	}
@@ -638,7 +783,7 @@ static char **add_text(enum APIS api, char **uri, char *text) {
 	return uri;
 }
 
-static char **add_count_upto_5000(enum APIS api, char **uri, int count) {
+static char **add_count_upto_5000(api_enum api, char **uri, int count) {
 	if (!(count)) {
 		return uri;
 	}
@@ -651,7 +796,7 @@ static char **add_count_upto_5000(enum APIS api, char **uri, int count) {
 	return uri;
 }
 
-static char **add_user_id_str(enum APIS api, char **uri, char *user_id) {
+static char **add_user_id_str(api_enum api, char **uri, char *user_id) {
 	if (!(user_id && *user_id)) {
 		return uri;
 	}
@@ -662,7 +807,7 @@ static char **add_user_id_str(enum APIS api, char **uri, char *user_id) {
 	return uri;
 }
 
-static char **add_follow(enum APIS api, char **uri, int follow) {
+static char **add_follow(api_enum api, char **uri, int follow) {
 	if (!(follow != -1)) {
 		return uri;
 	}
@@ -675,7 +820,7 @@ static char **add_follow(enum APIS api, char **uri, int follow) {
 	return uri;
 }
 
-static char **add_device(enum APIS api, char **uri, int device) {
+static char **add_device(api_enum api, char **uri, int device) {
 	if (!(device != -1)) {
 		return uri;
 	}
@@ -688,7 +833,7 @@ static char **add_device(enum APIS api, char **uri, int device) {
 	return uri;
 }
 
-static char **add_retweets(enum APIS api, char **uri, int retweets) {
+static char **add_retweets(api_enum api, char **uri, int retweets) {
 	if (!(retweets != -1)) {
 		return uri;
 	}
@@ -701,7 +846,7 @@ static char **add_retweets(enum APIS api, char **uri, int retweets) {
 	return uri;
 }
 
-static char **add_source_id(enum APIS api, char **uri, tweet_id_t source_id) {
+static char **add_source_id(api_enum api, char **uri, tweet_id_t source_id) {
 	if (!(source_id)) {
 		return uri;
 	}
@@ -714,7 +859,7 @@ static char **add_source_id(enum APIS api, char **uri, tweet_id_t source_id) {
 	return uri;
 }
 
-static char **add_source_screen_name(enum APIS api, char **uri, char *source_screen_name) {
+static char **add_source_screen_name(api_enum api, char **uri, char *source_screen_name) {
 	if (!(source_screen_name && *source_screen_name)) {
 		return uri;
 	}
@@ -725,7 +870,7 @@ static char **add_source_screen_name(enum APIS api, char **uri, char *source_scr
 	return uri;
 }
 
-static char **add_target_id(enum APIS api, char **uri, tweet_id_t target_id) {
+static char **add_target_id(api_enum api, char **uri, tweet_id_t target_id) {
 	if (!(target_id)) {
 		return uri;
 	}
@@ -738,7 +883,7 @@ static char **add_target_id(enum APIS api, char **uri, tweet_id_t target_id) {
 	return uri;
 }
 
-static char **add_target_screen_name(enum APIS api, char **uri, char *target_screen_name) {
+static char **add_target_screen_name(api_enum api, char **uri, char *target_screen_name) {
 	if (!(target_screen_name && *target_screen_name)) {
 		return uri;
 	}
@@ -749,7 +894,7 @@ static char **add_target_screen_name(enum APIS api, char **uri, char *target_scr
 	return uri;
 }
 
-static char **add_trend_location_woeid(enum APIS api, char **uri, int trend_location_woeid) {
+static char **add_trend_location_woeid(api_enum api, char **uri, int trend_location_woeid) {
 	if (!(trend_location_woeid)) {
 		return uri;
 	}
@@ -762,7 +907,7 @@ static char **add_trend_location_woeid(enum APIS api, char **uri, int trend_loca
 	return uri;
 }
 
-static char **add_sleep_time_enabled(enum APIS api, char **uri, int sleep_time_enabled) {
+static char **add_sleep_time_enabled(api_enum api, char **uri, int sleep_time_enabled) {
 	if (!(sleep_time_enabled != -1)) {
 		return uri;
 	}
@@ -775,7 +920,7 @@ static char **add_sleep_time_enabled(enum APIS api, char **uri, int sleep_time_e
 	return uri;
 }
 
-static char **add_start_sleep_time(enum APIS api, char **uri, int start_sleep_time) {
+static char **add_start_sleep_time(api_enum api, char **uri, int start_sleep_time) {
 	if (!(start_sleep_time)) {
 		return uri;
 	}
@@ -788,7 +933,7 @@ static char **add_start_sleep_time(enum APIS api, char **uri, int start_sleep_ti
 	return uri;
 }
 
-static char **add_end_sleep_time(enum APIS api, char **uri, int end_sleep_time) {
+static char **add_end_sleep_time(api_enum api, char **uri, int end_sleep_time) {
 	if (!(end_sleep_time)) {
 		return uri;
 	}
@@ -801,7 +946,7 @@ static char **add_end_sleep_time(enum APIS api, char **uri, int end_sleep_time) 
 	return uri;
 }
 
-static char **add_time_zone(enum APIS api, char **uri, char *time_zone) {
+static char **add_time_zone(api_enum api, char **uri, char *time_zone) {
 	if (!(time_zone && *time_zone)) {
 		return uri;
 	}
@@ -812,7 +957,7 @@ static char **add_time_zone(enum APIS api, char **uri, char *time_zone) {
 	return uri;
 }
 
-static char **add_device_str(enum APIS api, char **uri, char *device) {
+static char **add_device_str(api_enum api, char **uri, char *device) {
 	if (!(device && *device)) {
 		return uri;
 	}
@@ -823,7 +968,7 @@ static char **add_device_str(enum APIS api, char **uri, char *device) {
 	return uri;
 }
 
-static char **add_name(enum APIS api, char **uri, char *name) {
+static char **add_name(api_enum api, char **uri, char *name) {
 	if (!(name && *name)) {
 		return uri;
 	}
@@ -842,7 +987,7 @@ static char **add_name(enum APIS api, char **uri, char *name) {
 	return uri;
 }
 
-static char **add_url_upto_100(enum APIS api, char **uri, char *url){
+static char **add_url_upto_100(api_enum api, char **uri, char *url){
 	if (!(url && *url)) {
 		return uri;
 	}
@@ -861,7 +1006,7 @@ static char **add_url_upto_100(enum APIS api, char **uri, char *url){
 	return uri;
 }
 
-static char **add_location(enum APIS api, char **uri, char *location){
+static char **add_location(api_enum api, char **uri, char *location){
 	if (!(location && *location)) {
 		return uri;
 	}
@@ -880,7 +1025,7 @@ static char **add_location(enum APIS api, char **uri, char *location){
 	return uri;
 }
 
-static char **add_description(enum APIS api, char **uri, char *description){
+static char **add_description(api_enum api, char **uri, char *description){
 	if (!(description && *description)) {
 		return uri;
 	}
@@ -906,7 +1051,7 @@ static inline char **add_color(char **uri, int color, int digit){
 	return uri;
 }
 
-static char **add_profile_background_color(enum APIS api, char **uri, long profile_background_color){
+static char **add_profile_background_color(api_enum api, char **uri, long profile_background_color){
 	if (!(profile_background_color > -1)) {
 		return uri;
 	}
@@ -917,7 +1062,7 @@ static char **add_profile_background_color(enum APIS api, char **uri, long profi
 	return uri;
 }
 
-static char **add_profile_link_color(enum APIS api, char **uri, long profile_link_color){
+static char **add_profile_link_color(api_enum api, char **uri, long profile_link_color){
 	if (!(profile_link_color > -1)) {
 		return uri;
 	}
@@ -928,7 +1073,7 @@ static char **add_profile_link_color(enum APIS api, char **uri, long profile_lin
 	return uri;
 }
 
-static char **add_profile_sidebar_border_color(enum APIS api, char **uri, long profile_sidebar_border_color){
+static char **add_profile_sidebar_border_color(api_enum api, char **uri, long profile_sidebar_border_color){
 	if (!(profile_sidebar_border_color > -1)) {
 		return uri;
 	}
@@ -939,7 +1084,7 @@ static char **add_profile_sidebar_border_color(enum APIS api, char **uri, long p
 	return uri;
 }
 
-static char **add_profile_sidebar_fill_color(enum APIS api, char **uri, long profile_sidebar_fill_color){
+static char **add_profile_sidebar_fill_color(api_enum api, char **uri, long profile_sidebar_fill_color){
 	if (!(profile_sidebar_fill_color > -1)) {
 		return uri;
 	}
@@ -950,7 +1095,7 @@ static char **add_profile_sidebar_fill_color(enum APIS api, char **uri, long pro
 	return uri;
 }
 
-static char **add_profile_text_color(enum APIS api, char **uri, long profile_text_color){
+static char **add_profile_text_color(api_enum api, char **uri, long profile_text_color){
 	if (!(profile_text_color > -1)) {
 		return uri;
 	}
@@ -961,7 +1106,7 @@ static char **add_profile_text_color(enum APIS api, char **uri, long profile_tex
 	return uri;
 }
 
-static char **add_page(enum APIS api, char **uri, int page) {
+static char **add_page(api_enum api, char **uri, int page) {
 	if (!(page)) {
 		return uri;
 	}
@@ -974,7 +1119,7 @@ static char **add_page(enum APIS api, char **uri, int page) {
 	return uri;
 }
 
-static char **add_count_upto_20(enum APIS api, char **uri, int count) {
+static char **add_count_upto_20(api_enum api, char **uri, int count) {
 	if (!(count)) {
 		return uri;
 	}
@@ -983,6 +1128,32 @@ static char **add_count_upto_20(enum APIS api, char **uri, int count) {
 	alloc_strcat(uri, "count=");
 	snprintf(cnt, sizeof(cnt), "%d", count<21?count:20);
 	alloc_strcat(uri, cnt);
+
+	return uri;
+}
+
+/*--- Streaming API ---*/
+
+static char **add_delimited (stream_enum stream, char **uri, int delimited) {
+	if (!(delimited)) {
+		return uri;
+	}
+	add_que_or_amp_stream(stream, uri);
+	alloc_strcat(uri, "delimited=");
+	alloc_strcat(uri, "length");
+
+	return uri;
+}
+
+static char **add_stall_warnings (stream_enum stream, char **uri, int stall_warnings) {
+	if (!(stall_warnings != -1)) {
+		return uri;
+	}
+	char boolean[2];
+	add_que_or_amp_stream(stream, uri);
+	alloc_strcat(uri, "stall_warnings=");
+	snprintf(boolean, sizeof(boolean), "%d", !!stall_warnings);
+	alloc_strcat(uri, boolean);
 
 	return uri;
 }
@@ -1047,7 +1218,7 @@ Example Values: false
 	}
 
 	char *uri = NULL;
-	enum APIS api = STATUSES_MENTIONS_TIMELINE;
+	api_enum api = STATUSES_MENTIONS_TIMELINE;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -1154,7 +1325,7 @@ Example Values: false
 	}
 
 	char *uri = NULL;
-	enum APIS api = STATUSES_USER_TIMELINE;
+	api_enum api = STATUSES_USER_TIMELINE;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -1243,7 +1414,7 @@ Example Values: false
 	}
 
 	char *uri = NULL;
-	enum APIS api = STATUSES_HOME_TIMELINE;
+	api_enum api = STATUSES_HOME_TIMELINE;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -1323,7 +1494,7 @@ Example Values: false
 	}
 
 	char *uri = NULL;
-	enum APIS api = STATUSES_RETWEETS_OF_ME;
+	api_enum api = STATUSES_RETWEETS_OF_ME;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -1387,7 +1558,7 @@ Example Values: true
 	}
 
 	char *uri = NULL;
-	enum APIS api = STATUSES_RETWEETS_BY_ID;
+	api_enum api = STATUSES_RETWEETS_BY_ID;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 	char i[32] = {0};
@@ -1458,7 +1629,7 @@ Example Values: false
 	}
 
 	char *uri = NULL;
-	enum APIS api = STATUSES_SHOW_BY_ID;
+	api_enum api = STATUSES_SHOW_BY_ID;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -1512,7 +1683,7 @@ Example Values: true
 	}
 
 	char *uri = NULL;
-	enum APIS api = STATUSES_DESTROY_BY_ID;
+	api_enum api = STATUSES_DESTROY_BY_ID;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 	char i[32] = {0};
@@ -1605,7 +1776,7 @@ Example Values: true
 	}
 
 	char *uri = NULL;
-	enum APIS api = STATUSES_UPDATE;
+	api_enum api = STATUSES_UPDATE;
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -1664,7 +1835,7 @@ Example Values: true
 	}
 
 	char *uri = NULL;
-	enum APIS api = STATUSES_RETWEET_BY_ID;
+	api_enum api = STATUSES_RETWEET_BY_ID;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 	char i[32] = {0};
@@ -1784,7 +1955,7 @@ Example Values: fr
 	}
 
 	char *uri = NULL;
-	enum APIS api = STATUSES_OEMBED;
+	api_enum api = STATUSES_OEMBED;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -1854,7 +2025,7 @@ Example Values: true
 	}
 
 	char *uri = NULL;
-	enum APIS api = STATUSES_RETWEETERS_IDS;
+	api_enum api = STATUSES_RETWEETERS_IDS;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -1978,7 +2149,7 @@ Example Values: processTweets
 		return 0;
 	}
 	char *uri = NULL;
-	enum APIS api = SEARCH_TWEETS;
+	api_enum api = SEARCH_TWEETS;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -2054,7 +2225,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	}
 
 	char *uri = NULL;
-	enum APIS api = DIRECT_MESSAGES;
+	api_enum api = DIRECT_MESSAGES;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -2124,7 +2295,7 @@ Example Values: false
 	}
 
 	char *uri = NULL;
-	enum APIS api = DM_SENT;
+	api_enum api = DM_SENT;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -2166,7 +2337,7 @@ Example Values: 587424932
 	}
 
 	char *uri = NULL;
-	enum APIS api = DM_SHOW;
+	api_enum api = DM_SHOW;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -2211,7 +2382,7 @@ Example Values: false
 	}
 
 	char *uri = NULL;
-	enum APIS api = DM_DESTROY;
+	api_enum api = DM_DESTROY;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -2271,7 +2442,7 @@ Example Values: Meet me behind the cafeteria after school
 	}
 
 	char *uri = NULL;
-	enum APIS api = DM_NEW;
+	api_enum api = DM_NEW;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -2311,7 +2482,7 @@ Example Values: true
 	}
 
 	char *uri = NULL;
-	enum APIS api = FS_NO_RETWEETS_IDS;
+	api_enum api = FS_NO_RETWEETS_IDS;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -2387,7 +2558,7 @@ Example Values: 2048
 	}
 
 	char *uri = NULL;
-	enum APIS api = FRIENDS_IDS;
+	api_enum api = FRIENDS_IDS;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -2469,7 +2640,7 @@ Example Values: 2048
 	}
 
 	char *uri = NULL;
-	enum APIS api = FOLLOWERS_IDS;
+	api_enum api = FOLLOWERS_IDS;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -2519,7 +2690,7 @@ Example Values: 783214,6253282
 	}
 
 	char *uri = NULL;
-	enum APIS api = FS_LOOKUP;
+	api_enum api = FS_LOOKUP;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -2568,7 +2739,7 @@ Example Values: true
 	}
 
 	char *uri = NULL;
-	enum APIS api = FS_INCOMING;
+	api_enum api = FS_INCOMING;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -2616,7 +2787,7 @@ Example Values: true
 	}
 
 	char *uri = NULL;
-	enum APIS api = FS_OUTGOING;
+	api_enum api = FS_OUTGOING;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -2677,7 +2848,7 @@ Example Values: true
 	}
 
 	char *uri = NULL;
-	enum APIS api = FS_CREATE;
+	api_enum api = FS_CREATE;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -2731,7 +2902,7 @@ Example Values: 12345
 	}
 
 	char *uri = NULL;
-	enum APIS api = FS_DESTROY;
+	api_enum api = FS_DESTROY;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -2799,7 +2970,7 @@ Example Values: true, false
 	}
 
 	char *uri = NULL;
-	enum APIS api = FS_UPDATE;
+	api_enum api = FS_UPDATE;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -2869,7 +3040,7 @@ Example Values: noradio
 	}
 
 	char *uri = NULL;
-	enum APIS api = FS_SHOW;
+	api_enum api = FS_SHOW;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -2956,7 +3127,7 @@ Example Values: false
 	}
 
 	char *uri = NULL;
-	enum APIS api = FRIENDS_LIST;
+	api_enum api = FRIENDS_LIST;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -3044,7 +3215,7 @@ Example Values: false
 	}
 
 	char *uri = NULL;
-	enum APIS api = FOLLOWERS_LIST;
+	api_enum api = FOLLOWERS_LIST;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -3080,7 +3251,7 @@ https://api.twitter.com/1.1/account/settings.json
 	}
 
 	char *uri = NULL;
-	enum APIS api = ACCOUNT_SETTINGS;
+	api_enum api = ACCOUNT_SETTINGS;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -3124,7 +3295,7 @@ Example Values: true
 	}
 
 	char *uri = NULL;
-	enum APIS api = ACCOUNT_VERIFY_CREDEBTIALS;
+	api_enum api = ACCOUNT_VERIFY_CREDEBTIALS;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -3202,7 +3373,7 @@ Example Values: it, en, es
 	}
 
 	char *uri = NULL;
-	enum APIS api = ACCOUNT_SETTINGS;
+	api_enum api = ACCOUNT_SETTINGS;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -3252,7 +3423,7 @@ Example Values: true
 	}
 
 	char *uri = NULL;
-	enum APIS api = ACCOUNT_UPDATE_DELIVERY_DEVICE;
+	api_enum api = ACCOUNT_UPDATE_DELIVERY_DEVICE;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -3326,7 +3497,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	}
 
 	char *uri = NULL;
-	enum APIS api = ACCOUNT_UPDATE_PROFILE;
+	api_enum api = ACCOUNT_UPDATE_PROFILE;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -3411,7 +3582,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	}
 
 	char *uri = NULL;
-	enum APIS api = ACCOUNT_UPDATE_PROFILE_COLORS;
+	api_enum api = ACCOUNT_UPDATE_PROFILE_COLORS;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -3471,7 +3642,7 @@ Example Values: 12893764510938
 	}
 
 	char *uri = NULL;
-	enum APIS api = BLOCKS_LIST;
+	api_enum api = BLOCKS_LIST;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -3520,7 +3691,7 @@ Example Values: 12893764510938
 	}
 
 	char *uri = NULL;
-	enum APIS api = BLOCKS_IDS;
+	api_enum api = BLOCKS_IDS;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -3577,7 +3748,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	}
 
 	char *uri = NULL;
-	enum APIS api = BLOCKS_CREATE;
+	api_enum api = BLOCKS_CREATE;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -3640,7 +3811,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	}
 
 	char *uri = NULL;
-	enum APIS api = BLOCKS_DESTROY;
+	api_enum api = BLOCKS_DESTROY;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -3695,7 +3866,7 @@ Example Values: false
 	}
 
 	char *uri = NULL;
-	enum APIS api = USERS_LOOKUP;
+	api_enum api = USERS_LOOKUP;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -3750,7 +3921,7 @@ Example Values: false
 	}
 
 	char *uri = NULL;
-	enum APIS api = USERS_SHOW;
+	api_enum api = USERS_SHOW;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -3811,7 +3982,7 @@ Example Values: false
 	}
 
 	char *uri = NULL;
-	enum APIS api = USERS_SEARCH;
+	api_enum api = USERS_SEARCH;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -3866,7 +4037,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	}
 
 	char *uri = NULL;
-	enum APIS api = USERS_CONTRIBUTEES;
+	api_enum api = USERS_CONTRIBUTEES;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -3925,7 +4096,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	}
 
 	char *uri = NULL;
-	enum APIS api = USERS_CONTRIBUTORS;
+	api_enum api = USERS_CONTRIBUTORS;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -3958,7 +4129,7 @@ https://api.twitter.com/1.1/account/remove_profile_banner.json
 	}
 
 	char *uri = NULL;
-	enum APIS api = ACCOUNT_REMOVE_PROFILE_BANNER;
+	api_enum api = ACCOUNT_REMOVE_PROFILE_BANNER;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -4008,7 +4179,7 @@ Example Values: noradio
 	}
 
 	char *uri = NULL;
-	enum APIS api = USERS_PROFILE_BANNER;
+	api_enum api = USERS_PROFILE_BANNER;
 	alloc_strcat(&uri, api_uri_1_1); 
 	alloc_strcat(&uri, api_uri[api]);
 
@@ -4022,3 +4193,59 @@ Example Values: noradio
 	return ret;
 }
 
+/*--- Streaming API ---*/
+
+int post_statuses_filter () {return 0;}
+int get_statuses_sample (
+		char **res, //response
+		int *still_running,
+		long *timeo,
+		int delimited, //unless 0
+		int stall_warnings //unless -1
+	) {
+/*
+Resource URL
+
+https://stream.twitter.com/1.1/statuses/sample.json
+
+Parameters
+
+delimited optional
+
+Specifies whether messages should be length-delimited. See delimited or more
+information.
+
+stall_warnings optional
+
+Specifies whether stall warnings should be delivered. See stall_warnings for
+more information.
+*/
+	#ifdef DEBUG
+	puts(__func__);
+	#endif
+
+	if (!check_keys()) {
+		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	if (!current_info->isopened[STATUSES_SAMPLE]) {
+		char *uri = NULL;
+		stream_enum stream = STATUSES_SAMPLE;
+		alloc_strcat(&uri, stream_uri_1_1); 
+		alloc_strcat(&uri, stream_uri[stream]);
+
+		add_delimited(stream, &uri, delimited);
+		add_stall_warnings(stream, &uri, stall_warnings);
+		current_info->stream_easy[STATUSES_SAMPLE] = open_stream(uri, GET);
+		current_info->stream_multi[STATUSES_SAMPLE] = connect_stream(current_info->stream_easy[STATUSES_SAMPLE]);
+
+		current_info->isopened[STATUSES_SAMPLE] = true;
+	}
+
+	int ret = stream_request(current_info->stream_multi[STATUSES_SAMPLE], res, still_running, timeo);
+
+	return ret;
+}
+
+int get_user(){return 0;}
