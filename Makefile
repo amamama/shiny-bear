@@ -1,8 +1,10 @@
 CC		:= gcc
 
+CFLAGS		:= -ansi -std=c11 -W -Wall -Werror -O2
+LDFLAGS		:= -lcurl -loauth -lncurses #-lcrypto
 
 SRC_DIR		:= ./src
-SRCS			:= $(notdir $(wildcard $(SRC_DIR)/*.c))
+SRCS		:= $(notdir $(wildcard $(SRC_DIR)/*.c))
 
 INC_DIR		:= ./include
 INCS		:= $(addprefix $(INC_DIR)/, $(SRCS:.c=.h))
@@ -33,9 +35,9 @@ $(TARGET) : $(OBJS) main.c
 
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.c Makefile
 	@[ -d `dirname $@` ] || mkdir -p `dirname $@`
-	$(CC) -c -MMD -MP $< $(CFLAGS) -I$(INC_DIR) -o $@
+	$(CC) -c -MMD -MP -DDEBUG $< $(CFLAGS) -I$(INC_DIR) -o $@
 
 
-clean :
+clean :		
 	rm -f -r $(TARGET_DIR) $(OBJ_DIR)
 
