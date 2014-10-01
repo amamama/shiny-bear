@@ -35,7 +35,7 @@ $(TARGET) : $(OBJS) main.c
 
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.c Makefile
 	@[ -d `dirname $@` ] || mkdir -p `dirname $@`
-	$(CC) -c -MMD -MP -DDEBUG $< $(CFLAGS) -I$(INC_DIR) -o $@
+	$(CC) -c -MMD -MP $< $(CFLAGS) -I$(INC_DIR) -o $@
 
 
 clean :		
