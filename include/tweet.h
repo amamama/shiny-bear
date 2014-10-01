@@ -9,7 +9,7 @@ enum {
 	POST,
 };
 
-enum APIS {
+typedef enum {
 	STATUSES_MENTIONS_TIMELINE,
 	STATUSES_USER_TIMELINE,
 	STATUSES_HOME_TIMELINE,
@@ -60,37 +60,43 @@ enum APIS {
 	ACCOUNT_UPDATE_PROFILE_BANNER,
 	USERS_PROFILE_BANNER,
 	NUM_OF_APIS
-};
+} api_enum;
 
-union KEYS {
-	struct {
+typedef enum {
+	STATUSES_FILTER,
+	STATUSES_SAMPLE,
+	USER,
+	NUM_OF_STREAM
+} stream_enum;
+
+
+typedef struct {
 		char const *c_key;
 		char const *c_sec;
 		char const *t_key;
 		char const *t_sec;
-	} keys_struct;
-	char const *keys_array[4];
-};
+} oauth_keys;
 
-union KEYS *register_keys (union KEYS *k);
+oauth_keys register_keys (oauth_keys);
 int check_keys(void);
+oauth_keys current_keys(void);
 
-int bear_init(union KEYS *k);
+int bear_init(char const *, char const *, char const *, char const *);
 int bear_cleanup(void);
 
-enum ALIGN {
+typedef enum ALIGN {
 	NONE,
 	LEFT,
 	RIGHT,
 	CENTER,
-};
+} align;
 
-struct GEOCODE{
+typedef struct GEOCODE {
 		double latitude;
 		double longitude;
 		int radius;
 		char *unit;
-};
+} geocode;
 
 #define MI "mi"
 #define KM "km"
@@ -471,5 +477,12 @@ int get_users_profile_banner (
 	tweet_id_t user_id, //optional. if not 0, add it to argument.
 	char *screen_name //optional. if not 0, add it to argument.
 	);
+
+
+/*--- Streaming API ---*/
+
+int post_statuses_filter();
+int get_statuses_sample();
+int get_user();
 
 #endif
