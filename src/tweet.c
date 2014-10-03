@@ -157,25 +157,6 @@ static CURL *open_stream(char const *u, int p) {
 	puts(__func__);
 	#endif
 
-	CURL *curl = curl_easy_init();
-	if (!curl) {
-		fprintf(stderr, "failed to initialize curl\n");
-	}
-	char *request = NULL;
-	char *post = NULL;
-	if (p) {
-		request = oauth_sign_url2(u, &post, OA_HMAC, NULL, current_info->keys.c_key, current_info->keys.c_sec, current_info->keys.t_key, current_info->keys.t_sec);
-		curl_easy_setopt (curl, CURLOPT_POSTFIELDS, (void *) post);
-	} else {
-		request = oauth_sign_url2(u, NULL, OA_HMAC, NULL, current_info->keys.c_key, current_info->keys.c_sec, current_info->keys.t_key, current_info->keys.t_sec);
-	}
-	curl_easy_setopt (curl, CURLOPT_URL, request);
-	//is it good? i dont know.
-	//curl_easy_setopt (curl, CURLOPT_SSL_VERIFYPEER, 0L);
-
-	free(request);request = NULL;
-	free(post);post = NULL;
-
 	return curl;
 }
 
@@ -184,9 +165,6 @@ static CURLM *connect_stream(CURL *curl) {
 	puts(__func__);
 	#endif
 
-	CURLM *multi = curl_multi_init();
-	curl_multi_add_handle(multi, curl);
-
 	return multi;
 }
 
@@ -194,21 +172,6 @@ static int stream_request(CURLM *curlm, char **rep, int *still_running, long *ti
 	#ifdef DEBUG
 	puts(__func__);
 	#endif
-
-	if (rep && *rep) {
-		memset(*rep,0,strlen(*rep));
-	}
-	CURLcode ret;
-	//if (rep ) {
-	//	curl_easy_setopt (curl, CURLOPT_WRITEDATA, (void *) rep);
-	//	curl_easy_setopt (curl, CURLOPT_WRITEFUNCTION, write_data);
-	//}
-
-	ret = curl_multi_perform (curlm, still_running);
-	curl_multi_timeout(curlm, timeo);
-	if (ret != CURLE_OK) {
-		fprintf (stderr, "curl_multi_perform() failed: %s\n", curl_multi_strerror (ret));
-	}
 
 	return ret;
 }
@@ -4223,27 +4186,6 @@ more information.
 	#ifdef DEBUG
 	puts(__func__);
 	#endif
-
-	if (!check_keys()) {
-		fprintf(stderr, "need register_keys\n");
-		return 0;
-	}
-
-	if (!current_info->isopened[STATUSES_SAMPLE]) {
-		char *uri = NULL;
-		stream_enum stream = STATUSES_SAMPLE;
-		alloc_strcat(&uri, stream_uri_1_1); 
-		alloc_strcat(&uri, stream_uri[stream]);
-
-		add_delimited(stream, &uri, delimited);
-		add_stall_warnings(stream, &uri, stall_warnings);
-		current_info->stream_easy[STATUSES_SAMPLE] = open_stream(uri, GET);
-		current_info->stream_multi[STATUSES_SAMPLE] = connect_stream(current_info->stream_easy[STATUSES_SAMPLE]);
-
-		current_info->isopened[STATUSES_SAMPLE] = true;
-	}
-
-	int ret = stream_request(current_info->stream_multi[STATUSES_SAMPLE], res, still_running, timeo);
 
 	return ret;
 }
