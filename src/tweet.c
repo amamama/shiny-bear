@@ -223,13 +223,13 @@ inline static char **add_que_or_amp(api_enum api, char **uri) {
 	return uri;
 }
 
-inline static char **add_que_or_amp_stream(stream_enum stream, char **uri) {
+/*inline static char **add_que_or_amp_stream(stream_enum stream, char **uri) {
 	alloc_strcat(uri, strlen(*uri)==(strlen(stream_uri_1_1) + strlen(stream_uri[stream]))?"?":"&");
 	return uri;
-}
+}*/
 
 static char **add_count(api_enum api, char **uri, int count) {
-	if (!(count)) {
+	if (!count) {
 		return uri;
 	}
 	char cnt[8] = {0};
@@ -242,7 +242,7 @@ static char **add_count(api_enum api, char **uri, int count) {
 }
 
 static char **add_id(api_enum api, char **uri, tweet_id_t id) {
-	if (!(id)) {
+	if (!id) {
 		return uri;
 	}
 	char i[32] = {0};
@@ -255,7 +255,7 @@ static char **add_id(api_enum api, char **uri, tweet_id_t id) {
 }
 
 static char **add_since_id(api_enum api, char **uri, tweet_id_t since_id) {
-	if (!(since_id)) {
+	if (!since_id) {
 		return uri;
 	}
 	char id[32] = {0};
@@ -268,7 +268,7 @@ static char **add_since_id(api_enum api, char **uri, tweet_id_t since_id) {
 }
 
 static char **add_max_id(api_enum api, char **uri, tweet_id_t max_id) {
-	if (!(max_id)) {
+	if (!max_id) {
 		return uri;
 	}
 	char id[32] = {0};
@@ -281,7 +281,7 @@ static char **add_max_id(api_enum api, char **uri, tweet_id_t max_id) {
 }
 
 static char **add_trim_user(api_enum api, char **uri, int trim_user) {
-	if (!(trim_user != -1)) {
+	if (trim_user == -1) {
 		return uri;
 	}
 	char boolean[2];
@@ -294,7 +294,7 @@ static char **add_trim_user(api_enum api, char **uri, int trim_user) {
 }
 
 static char **add_contributor_details(api_enum api, char **uri, int contributor_details) {
-	if (!(contributor_details != -1)) {
+	if (contributor_details == -1) {
 		return uri;
 	}
 	char boolean[2];
@@ -307,7 +307,7 @@ static char **add_contributor_details(api_enum api, char **uri, int contributor_
 }
 
 static char **add_include_entities(api_enum api, char **uri, int include_entities) {
-	if (!(include_entities != -1)) {
+	if (include_entities == -1) {
 		return uri;
 	}
 	char boolean[2];
@@ -320,7 +320,7 @@ static char **add_include_entities(api_enum api, char **uri, int include_entitie
 }
 
 static char **add_include_rts(api_enum api, char **uri, int include_rts, int count) {
-	if (!(count || (include_rts != -1))) {
+	if (!count && include_rts == -1) {
 		return uri;
 	}
 	char boolean[2];
@@ -333,7 +333,7 @@ static char **add_include_rts(api_enum api, char **uri, int include_rts, int cou
 }
 
 static char **add_user_id(api_enum api, char **uri, tweet_id_t user_id) {
-	if (!(user_id)) {
+	if (!user_id) {
 		return uri;
 	}
 	char id[32] = {0};
@@ -357,7 +357,7 @@ static char **add_screen_name(api_enum api, char **uri, char *screen_name) {
 }
 
 static char **add_exclude_replies(api_enum api, char **uri, int exclude_replies) {
-	if (!(exclude_replies != -1)) {
+	if (exclude_replies == -1) {
 		return uri;
 	}
 	char boolean[2];
@@ -370,7 +370,7 @@ static char **add_exclude_replies(api_enum api, char **uri, int exclude_replies)
 }
 
 static char **add_include_user_entities(api_enum api, char **uri, int include_user_entities) {
-	if (!(include_user_entities != -1)) {
+	if (include_user_entities == -1) {
 		return uri;
 	}
 	char boolean[2];
@@ -383,7 +383,7 @@ static char **add_include_user_entities(api_enum api, char **uri, int include_us
 }
 
 static char **add_include_my_retweet(api_enum api, char **uri, int include_my_retweet) {
-	if (!(include_my_retweet != -1)) {
+	if (include_my_retweet == -1) {
 		return uri;
 	}
 	char boolean[2];
@@ -415,7 +415,7 @@ static char **add_status(api_enum api, char **uri, char *status) {
 }
 
 static char **add_in_reply_to_status_id(api_enum api, char **uri, tweet_id_t in_reply_to_status_id) {
-	if (!(in_reply_to_status_id)) {
+	if (!in_reply_to_status_id) {
 		return uri;
 	}
 	char id[32] = {0};
@@ -446,7 +446,7 @@ static char **add_coods(api_enum api, char **uri, struct GEOCODE l_l) {
 }
 
 static char **add_place_id(api_enum api, char **uri, tweet_id_t place_id) {
-	if (!(place_id)) {
+	if (!place_id) {
 		return uri;
 	}
 	char id[32] = {0};
@@ -459,7 +459,7 @@ static char **add_place_id(api_enum api, char **uri, tweet_id_t place_id) {
 }
 
 static char **add_display_coordinates(api_enum api, char **uri, int display_coordinates) {
-	if (!(display_coordinates != -1)) {
+	if (display_coordinates == -1) {
 		return uri;
 	}
 	char boolean[2];
@@ -498,7 +498,7 @@ static char **add_maxwidth(api_enum api, char **uri, int maxwidth) {
 }
 
 static char **add_hide_media(api_enum api, char **uri, int hide_media) {
-	if (!(hide_media != -1)) {
+	if (hide_media == -1) {
 		return uri;
 	}
 	char boolean[2];
@@ -511,7 +511,7 @@ static char **add_hide_media(api_enum api, char **uri, int hide_media) {
 }
 
 static char **add_hide_thread(api_enum api, char **uri, int hide_thread) {
-	if (!(hide_thread != -1)) {
+	if (hide_thread == -1) {
 		return uri;
 	}
 	char boolean[2];
@@ -524,7 +524,7 @@ static char **add_hide_thread(api_enum api, char **uri, int hide_thread) {
 }
 
 static char **add_omit_script(api_enum api, char **uri, int omit_script) {
-	if (!(omit_script != -1)) {
+	if (omit_script == -1) {
 		return uri;
 	}
 	char boolean[2];
@@ -536,8 +536,8 @@ static char **add_omit_script(api_enum api, char **uri, int omit_script) {
 	return uri;
 }
 
-static char **add_align(api_enum api, char **uri, enum ALIGN align) {
-	if (!(align < (CENTER + 1))) {
+static char **add_align(api_enum api, char **uri, int align) {
+	if (align > (CENTER + 1) || align == -1) {
 		return uri;
 	}
 	char const *algn[] = {"none", "left", "right", "center"};
@@ -571,7 +571,7 @@ static char **add_lang(api_enum api, char **uri, char *lang) {
 }
 
 static char **add_cursor(api_enum api, char **uri, cursor_t cursor) {
-	if (!(cursor)) {
+	if (!cursor) {
 		return uri;
 	}
 	char cur[32] = {0};
@@ -584,7 +584,7 @@ static char **add_cursor(api_enum api, char **uri, cursor_t cursor) {
 }
 
 static char **add_stringify_ids(api_enum api, char **uri, int stringify_ids) {
-	if (!(stringify_ids != -1)) {
+	if (stringify_ids == -1) {
 		return uri;
 	}
 	char boolean[2];
@@ -641,7 +641,7 @@ static char **add_locale(api_enum api, char **uri, char *locale) {
 }
 
 static char **add_result_type(api_enum api, char **uri, int result_type) {
-	if (!(result_type)) {
+	if (!result_type) {
 		return uri;
 	}
 	add_que_or_amp(api, uri);
@@ -688,7 +688,7 @@ static char **add_callback(api_enum api, char **uri, char *callback) {
 }
 
 static char **add_skip_status(api_enum api, char **uri, int skip_status) {
-	if (!(skip_status != -1)) {
+	if (skip_status == -1) {
 		return uri;
 	}
 	char boolean[2];
@@ -701,7 +701,7 @@ static char **add_skip_status(api_enum api, char **uri, int skip_status) {
 }
 
 static char **add_pages(api_enum api, char **uri, int pages) {
-	if (!(pages)) {
+	if (!pages) {
 		return uri;
 	}
 	char pg[8] = {0};
@@ -727,7 +727,7 @@ static char **add_text(api_enum api, char **uri, char *text) {
 }
 
 static char **add_count_upto_5000(api_enum api, char **uri, int count) {
-	if (!(count)) {
+	if (!count) {
 		return uri;
 	}
 	char cnt[8] = {0};
@@ -751,7 +751,7 @@ static char **add_user_id_str(api_enum api, char **uri, char *user_id) {
 }
 
 static char **add_follow(api_enum api, char **uri, int follow) {
-	if (!(follow != -1)) {
+	if (follow == -1) {
 		return uri;
 	}
 	char boolean[2];
@@ -764,7 +764,7 @@ static char **add_follow(api_enum api, char **uri, int follow) {
 }
 
 static char **add_device(api_enum api, char **uri, int device) {
-	if (!(device != -1)) {
+	if (device == -1) {
 		return uri;
 	}
 	char boolean[2];
@@ -777,7 +777,7 @@ static char **add_device(api_enum api, char **uri, int device) {
 }
 
 static char **add_retweets(api_enum api, char **uri, int retweets) {
-	if (!(retweets != -1)) {
+	if (retweets == -1) {
 		return uri;
 	}
 	char boolean[2];
@@ -790,7 +790,7 @@ static char **add_retweets(api_enum api, char **uri, int retweets) {
 }
 
 static char **add_source_id(api_enum api, char **uri, tweet_id_t source_id) {
-	if (!(source_id)) {
+	if (!source_id) {
 		return uri;
 	}
 	char id[32] = {0};
@@ -814,7 +814,7 @@ static char **add_source_screen_name(api_enum api, char **uri, char *source_scre
 }
 
 static char **add_target_id(api_enum api, char **uri, tweet_id_t target_id) {
-	if (!(target_id)) {
+	if (!target_id) {
 		return uri;
 	}
 	char id[32] = {0};
@@ -838,7 +838,7 @@ static char **add_target_screen_name(api_enum api, char **uri, char *target_scre
 }
 
 static char **add_trend_location_woeid(api_enum api, char **uri, int trend_location_woeid) {
-	if (!(trend_location_woeid)) {
+	if (!trend_location_woeid) {
 		return uri;
 	}
 	char woeid[12] = {0};
@@ -851,7 +851,7 @@ static char **add_trend_location_woeid(api_enum api, char **uri, int trend_locat
 }
 
 static char **add_sleep_time_enabled(api_enum api, char **uri, int sleep_time_enabled) {
-	if (!(sleep_time_enabled != -1)) {
+	if (!sleep_time_enabled == -1) {
 		return uri;
 	}
 	char boolean[2];
@@ -864,7 +864,7 @@ static char **add_sleep_time_enabled(api_enum api, char **uri, int sleep_time_en
 }
 
 static char **add_start_sleep_time(api_enum api, char **uri, int start_sleep_time) {
-	if (!(start_sleep_time)) {
+	if (!start_sleep_time) {
 		return uri;
 	}
 	char time[12] = {0};
@@ -877,7 +877,7 @@ static char **add_start_sleep_time(api_enum api, char **uri, int start_sleep_tim
 }
 
 static char **add_end_sleep_time(api_enum api, char **uri, int end_sleep_time) {
-	if (!(end_sleep_time)) {
+	if (!end_sleep_time) {
 		return uri;
 	}
 	char time[12] = {0};
@@ -995,7 +995,7 @@ static inline char **add_color(char **uri, int color, int digit){
 }
 
 static char **add_profile_background_color(api_enum api, char **uri, long profile_background_color){
-	if (!(profile_background_color > -1)) {
+	if (profile_background_color < 0) {
 		return uri;
 	}
 	add_que_or_amp(api, uri);
@@ -1006,7 +1006,7 @@ static char **add_profile_background_color(api_enum api, char **uri, long profil
 }
 
 static char **add_profile_link_color(api_enum api, char **uri, long profile_link_color){
-	if (!(profile_link_color > -1)) {
+	if (profile_link_color < 0) {
 		return uri;
 	}
 	add_que_or_amp(api, uri);
@@ -1017,7 +1017,7 @@ static char **add_profile_link_color(api_enum api, char **uri, long profile_link
 }
 
 static char **add_profile_sidebar_border_color(api_enum api, char **uri, long profile_sidebar_border_color){
-	if (!(profile_sidebar_border_color > -1)) {
+	if (profile_sidebar_border_color < 0) {
 		return uri;
 	}
 	add_que_or_amp(api, uri);
@@ -1028,7 +1028,7 @@ static char **add_profile_sidebar_border_color(api_enum api, char **uri, long pr
 }
 
 static char **add_profile_sidebar_fill_color(api_enum api, char **uri, long profile_sidebar_fill_color){
-	if (!(profile_sidebar_fill_color > -1)) {
+	if (profile_sidebar_fill_color < 0) {
 		return uri;
 	}
 	add_que_or_amp(api, uri);
@@ -1039,7 +1039,7 @@ static char **add_profile_sidebar_fill_color(api_enum api, char **uri, long prof
 }
 
 static char **add_profile_text_color(api_enum api, char **uri, long profile_text_color){
-	if (!(profile_text_color > -1)) {
+	if (profile_text_color < -1) {
 		return uri;
 	}
 	add_que_or_amp(api, uri);
@@ -1050,7 +1050,7 @@ static char **add_profile_text_color(api_enum api, char **uri, long profile_text
 }
 
 static char **add_page(api_enum api, char **uri, int page) {
-	if (!(page)) {
+	if (!page) {
 		return uri;
 	}
 	char pg[8] = {0};
@@ -1063,7 +1063,7 @@ static char **add_page(api_enum api, char **uri, int page) {
 }
 
 static char **add_count_upto_20(api_enum api, char **uri, int count) {
-	if (!(count)) {
+	if (!count) {
 		return uri;
 	}
 	char cnt[8] = {0};
