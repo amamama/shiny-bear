@@ -1,7 +1,9 @@
-CC		:= gcc
+CC		?= cc
 
-CFLAGS		:= -ansi -std=c11 -W -Wall -Werror -O2
-LDFLAGS		:= -lcurl -loauth -lncurses #-lcrypto
+CFLAGS		:= -ansi -std=c11 -W -Wall -Werror -O2 $(CFLAGS)
+LDFLAGS		:= -lcurl -loauth $(LDFALGS)#-lcrypto
+MAINCFLAGS	:= $(MAINCFLAGS)
+MAINLDFLAGS	:= -lncurses -ljansson $(LDFLAGS)
 
 SRC_DIR		:= ./src
 SRCS		:= $(notdir $(wildcard $(SRC_DIR)/*.c))
@@ -16,7 +18,7 @@ DEP_DIR		:= ./obj
 DEPS		:= $(addprefix $(DEP_DIR)/, $(SRCS:.c=.d))
 
 TARGET_DIR	:= ./bin
-TARGET		:= $(TARGET_DIR)/tweet 
+TARGET		:= $(TARGET_DIR)/tweet
 
 
 
@@ -30,7 +32,7 @@ run : $(TARGET)
 
 $(TARGET) : $(OBJS) main.c
 	@[ -d `dirname $@` ] || mkdir -p `dirname $@`
-	$(CC) main.c $(OBJS) $(LDFLAGS) -o $(TARGET)
+	$(CC) $(MAINCFLAGS) main.c $(MAINLDFLAGS) $(OBJS) $(LDFLAGS) -o $(TARGET)
 
 
 $(OBJ_DIR)/%.o : $(SRC_DIR)/%.c Makefile
