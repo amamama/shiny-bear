@@ -481,8 +481,4 @@ int get_users_profile_banner (
 
 /*--- Streaming API ---*/
 
-int post_statuses_filter();
-int get_statuses_sample();
-int get_user();
-
 #endif

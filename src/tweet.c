@@ -13,75 +13,61 @@
 #include "tweet.h"
 #include "utils.h"
 
-typedef struct info_list_struct {
-	struct info_list_struct *next;
+typedef struct user_info_list_struct {
+	struct user_info_list_struct *next;
 	oauth_keys keys;
-	bool isopened[NUM_OF_STREAM];
-	CURL *stream_easy[NUM_OF_STREAM];
-	CURLM *stream_multi[NUM_OF_STREAM];
-} info_list;
+} user_info_list;
 
-static info_list *info = NULL;
-static info_list *current_info = NULL;
+static user_info_list *info = NULL;
+static user_info_list *current_user = NULL;
 
-static info_list *init_info_list (info_list *info) {
+static user_info_list *init_user_info_list (user_info_list *info) {
 	info->next = NULL;
 	info->keys = (oauth_keys){NULL, NULL, NULL, NULL};
-	for (int i = 0; i < NUM_OF_STREAM; i++) {
-		info->isopened[i] = false;
-		info->stream_easy[i] =  NULL;
-		info->stream_multi[i] =  NULL;
-	}
 
 	return info;
 }
 
 oauth_keys register_keys(oauth_keys keys) {
 	if (!info) {
-		info_list *tmp = (info_list *)malloc(sizeof(info_list));
+		user_info_list *tmp = (user_info_list *)malloc(sizeof(user_info_list));
 		if (!tmp) {
 			fprintf(stderr, "malloc failed\n");
 		}
 		info = tmp;
-		init_info_list(tmp);
-		tmp->keys.c_key = keys.c_key;
-		tmp->keys.c_sec = keys.c_sec;
-		tmp->keys.t_key = keys.t_key;
-		tmp->keys.t_sec = keys.t_sec;
+		init_user_info_list(tmp);
+		tmp->keys = keys;
 	}
 
 	bool isregistered = false;
-	for (info_list *list = info; list; list = list->next) {
+	for (user_info_list *list = info; list; list = list->next) {
 		if (!strcmp(list->keys.c_key, keys.c_key)) {
-			current_info = list;
+			current_user = list;
 			isregistered = true;
 			break;
 		}
 	}
 
 	if (!isregistered) {
-		info_list *tmp = (info_list *)malloc(sizeof(info_list));
+		user_info_list *tmp = (user_info_list *)malloc(sizeof(user_info_list));
 		if (!tmp) {
 			fprintf(stderr, "malloc failed\n");
 		}
 		info->next = tmp;
-		init_info_list(tmp);
-		tmp->keys.c_key = keys.c_key;
-		tmp->keys.c_sec = keys.c_sec;
-		tmp->keys.t_key = keys.t_key;
-		tmp->keys.t_sec = keys.t_sec;
-		current_info = tmp;
+		init_user_info_list(tmp);
+		tmp->keys = keys;
+		current_user = tmp;
 	}
 
 	return keys;
 }
 
 int check_keys(void) {
-	return current_info->keys.c_key&&current_info->keys.c_sec&&current_info->keys.t_key&&current_info->keys.t_sec;
+	return current_user->keys.c_key&&current_user->keys.c_sec&&current_user->keys.t_key&&current_user->keys.t_sec;
 }
 
 oauth_keys current_keys(void) {
-	return current_info->keys;
+	return current_user->keys;
 }
 
 int bear_init(char const *c_key, char const *c_sec, char const *t_key, char const *t_sec) {
@@ -90,14 +76,8 @@ int bear_init(char const *c_key, char const *c_sec, char const *t_key, char cons
 }
 
 int bear_cleanup(void) {
-	for (info_list *list = info, *tmp; list; ) {
+	for (user_info_list *list = info, *tmp; list; ) {
 		tmp = list;
-		for (int i = 0; i < NUM_OF_STREAM; i++) {
-			if (list->isopened[i]) {
-				curl_easy_cleanup(list->stream_easy[i]);
-				curl_multi_cleanup(list->stream_multi[i]);
-			}
-		}
 		list = list->next;
 		free(tmp);
 	}
@@ -128,10 +108,10 @@ static int http_request(char const *u, int p, char **rep) {
 	char *request = NULL;
 	char *post = NULL;
 	if (p) {
-		request = oauth_sign_url2(u, &post, OA_HMAC, NULL, current_info->keys.c_key, current_info->keys.c_sec, current_info->keys.t_key, current_info->keys.t_sec);
+		request = oauth_sign_url2(u, &post, OA_HMAC, NULL, current_user->keys.c_key, current_user->keys.c_sec, current_user->keys.t_key, current_user->keys.t_sec);
 		curl_easy_setopt (curl, CURLOPT_POSTFIELDS, (void *) post);
 	} else {
-		request = oauth_sign_url2(u, NULL, OA_HMAC, NULL, current_info->keys.c_key, current_info->keys.c_sec, current_info->keys.t_key, current_info->keys.t_sec);
+		request = oauth_sign_url2(u, NULL, OA_HMAC, NULL, current_user->keys.c_key, current_user->keys.c_sec, current_user->keys.t_key, current_user->keys.t_sec);
 	}
 	curl_easy_setopt (curl, CURLOPT_URL, request);
 	//is it good? i dont know.
@@ -151,7 +131,7 @@ static int http_request(char const *u, int p, char **rep) {
 
 	return ret;
 }
-
+/*
 static CURL *open_stream(char const *u, int p) {
 	#ifdef DEBUG
 	puts(__func__);
@@ -175,7 +155,7 @@ static int stream_request(CURLM *curlm, char **rep, int *still_running, long *ti
 
 	return ret;
 }
-
+*/
 char const *api_uri_1_1 = "https://api.twitter.com/1.1/";
 char const *stream_uri_1_1 = "https://stream.twitter.com/1.1/";
 char const *userstream_uri_1_1 = "https://userstream.twitter.com/1.1/";
@@ -1097,6 +1077,7 @@ static char **add_count_upto_20(api_enum api, char **uri, int count) {
 
 /*--- Streaming API ---*/
 
+/*
 static char **add_delimited (stream_enum stream, char **uri, int delimited) {
 	if (!(delimited)) {
 		return uri;
@@ -1120,6 +1101,7 @@ static char **add_stall_warnings (stream_enum stream, char **uri, int stall_warn
 
 	return uri;
 }
+*/
 
 int get_statuses_mentions_timeline (
 	char **res, //response
@@ -4158,36 +4140,3 @@ Example Values: noradio
 
 /*--- Streaming API ---*/
 
-int post_statuses_filter () {return 0;}
-int get_statuses_sample (
-		char **res, //response
-		int *still_running,
-		long *timeo,
-		int delimited, //unless 0
-		int stall_warnings //unless -1
-	) {
-/*
-Resource URL
-
-https://stream.twitter.com/1.1/statuses/sample.json
-
-Parameters
-
-delimited optional
-
-Specifies whether messages should be length-delimited. See delimited or more
-information.
-
-stall_warnings optional
-
-Specifies whether stall warnings should be delivered. See stall_warnings for
-more information.
-*/
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
-
-	return ret;
-}
-
-int get_user(){return 0;}
