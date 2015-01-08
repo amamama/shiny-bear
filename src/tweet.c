@@ -1894,7 +1894,7 @@ Example Values: fr
 		return 0;
 	}
 
-	if (!id || !url || !(*url)) {
+	if ((!id && !url) || !(*url)) {
 		fprintf(stderr, "need id number or url text.\n");
 		return 0;
 	}
