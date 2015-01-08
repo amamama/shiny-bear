@@ -9,7 +9,7 @@ char **alloc_strcat(char **dest, char const *src) {
 
 	int destlen = 0, srclen = 0,wasdestnull = 0;
 	destlen = (*dest)?strlen(*dest):0;
-	srclen = srclen?strlen(src):0;
+	srclen = src?strlen(src):0;
 	wasdestnull = !(*dest);
 	*dest = (char*)realloc(*dest, (destlen + srclen + 1)*sizeof(char));
 	if (dest) {
