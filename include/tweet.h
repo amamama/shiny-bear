@@ -419,6 +419,7 @@ int get_users_contributors (
 int post_account_remove_profile_banner (
 	char **res //response
 	);
+
 int get_users_profile_banner (
 	char **res, //response
 	tweet_id_t user_id, //optional. if not 0, add it to argument.
