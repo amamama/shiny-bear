@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdbool.h> 
+#include <stdbool.h>
 #include <math.h>
 
 #include <oauth.h>
@@ -131,34 +131,8 @@ static int http_request(char const *u, int p, char **rep) {
 
 	return ret;
 }
-/*
-static CURL *open_stream(char const *u, int p) {
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
 
-	return curl;
-}
-
-static CURLM *connect_stream(CURL *curl) {
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
-
-	return multi;
-}
-
-static int stream_request(CURLM *curlm, char **rep, int *still_running, long *timeo) {
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
-
-	return ret;
-}
-*/
 char const *api_uri_1_1 = "https://api.twitter.com/1.1/";
-char const *stream_uri_1_1 = "https://stream.twitter.com/1.1/";
-char const *userstream_uri_1_1 = "https://userstream.twitter.com/1.1/";
 
 char const * api_uri[] = {
 	[STATUSES_MENTIONS_TIMELINE] = "statuses/mentions_timeline.json",
@@ -212,21 +186,10 @@ char const * api_uri[] = {
 	[USERS_PROFILE_BANNER] = "users/profile_banner.json",
 };
 
-const char *stream_uri[] = {
-	[STATUSES_FILTER] = "statuses/filter.json",
-	[STATUSES_SAMPLE] = "statuses/sample.json",
-	[USER] = "user.json",
-};
-
 inline static char **add_que_or_amp(api_enum api, char **uri) {
 	alloc_strcat(uri, strlen(*uri)==(strlen(api_uri_1_1) + strlen(api_uri[api]))?"?":"&");
 	return uri;
 }
-
-/*inline static char **add_que_or_amp_stream(stream_enum stream, char **uri) {
-	alloc_strcat(uri, strlen(*uri)==(strlen(stream_uri_1_1) + strlen(stream_uri[stream]))?"?":"&");
-	return uri;
-}*/
 
 static char **add_count(api_enum api, char **uri, int count) {
 	if (!count) {
@@ -1164,7 +1127,7 @@ Example Values: false
 
 	char *uri = NULL;
 	api_enum api = STATUSES_MENTIONS_TIMELINE;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_count(api, &uri, count);
@@ -1271,7 +1234,7 @@ Example Values: false
 
 	char *uri = NULL;
 	api_enum api = STATUSES_USER_TIMELINE;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_user_id(api, &uri, user_id);
@@ -1360,7 +1323,7 @@ Example Values: false
 
 	char *uri = NULL;
 	api_enum api = STATUSES_HOME_TIMELINE;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_count(api, &uri, count);
@@ -1440,7 +1403,7 @@ Example Values: false
 
 	char *uri = NULL;
 	api_enum api = STATUSES_RETWEETS_OF_ME;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_count(api, &uri, count);
@@ -1504,7 +1467,7 @@ Example Values: true
 
 	char *uri = NULL;
 	api_enum api = STATUSES_RETWEETS_BY_ID;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 	char i[32] = {0};
 	snprintf(i, sizeof(i), "%lld.json", id);
@@ -1575,7 +1538,7 @@ Example Values: false
 
 	char *uri = NULL;
 	api_enum api = STATUSES_SHOW_BY_ID;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_id(api, &uri, id);
@@ -1629,7 +1592,7 @@ Example Values: true
 
 	char *uri = NULL;
 	api_enum api = STATUSES_DESTROY_BY_ID;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 	char i[32] = {0};
 	snprintf(i, sizeof(i), "%lld.json", id);
@@ -1781,7 +1744,7 @@ Example Values: true
 
 	char *uri = NULL;
 	api_enum api = STATUSES_RETWEET_BY_ID;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 	char i[32] = {0};
 	snprintf(i, sizeof(i), "%lld.json", id);
@@ -1901,7 +1864,7 @@ Example Values: fr
 
 	char *uri = NULL;
 	api_enum api = STATUSES_OEMBED;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_id(api, &uri, id);
@@ -1971,7 +1934,7 @@ Example Values: true
 
 	char *uri = NULL;
 	api_enum api = STATUSES_RETWEETERS_IDS;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_id(api, &uri, id);
@@ -2095,7 +2058,7 @@ Example Values: processTweets
 	}
 	char *uri = NULL;
 	api_enum api = SEARCH_TWEETS;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_q(api, &uri, q);
@@ -2171,7 +2134,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 
 	char *uri = NULL;
 	api_enum api = DIRECT_MESSAGES;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_count(api, &uri, count);
@@ -2241,7 +2204,7 @@ Example Values: false
 
 	char *uri = NULL;
 	api_enum api = DM_SENT;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_count(api, &uri, count);
@@ -2283,7 +2246,7 @@ Example Values: 587424932
 
 	char *uri = NULL;
 	api_enum api = DM_SHOW;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_id(api, &uri, id);
@@ -2328,7 +2291,7 @@ Example Values: false
 
 	char *uri = NULL;
 	api_enum api = DM_DESTROY;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_id(api, &uri, id);
@@ -2388,7 +2351,7 @@ Example Values: Meet me behind the cafeteria after school
 
 	char *uri = NULL;
 	api_enum api = DM_NEW;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_user_id(api, &uri, user_id);
@@ -2428,7 +2391,7 @@ Example Values: true
 
 	char *uri = NULL;
 	api_enum api = FS_NO_RETWEETS_IDS;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_stringify_ids(api, &uri, stringify_ids);
@@ -2504,7 +2467,7 @@ Example Values: 2048
 
 	char *uri = NULL;
 	api_enum api = FRIENDS_IDS;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_user_id(api, &uri, user_id);
@@ -2586,7 +2549,7 @@ Example Values: 2048
 
 	char *uri = NULL;
 	api_enum api = FOLLOWERS_IDS;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_user_id(api, &uri, user_id);
@@ -2636,7 +2599,7 @@ Example Values: 783214,6253282
 
 	char *uri = NULL;
 	api_enum api = FS_LOOKUP;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_screen_name(api, &uri, screen_name);
@@ -2685,7 +2648,7 @@ Example Values: true
 
 	char *uri = NULL;
 	api_enum api = FS_INCOMING;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_cursor(api, &uri, cursor);
@@ -2733,7 +2696,7 @@ Example Values: true
 
 	char *uri = NULL;
 	api_enum api = FS_OUTGOING;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_cursor(api, &uri, cursor);
@@ -2794,7 +2757,7 @@ Example Values: true
 
 	char *uri = NULL;
 	api_enum api = FS_CREATE;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_user_id(api, &uri, user_id);
@@ -2848,7 +2811,7 @@ Example Values: 12345
 
 	char *uri = NULL;
 	api_enum api = FS_DESTROY;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_user_id(api, &uri, user_id);
@@ -2916,7 +2879,7 @@ Example Values: true, false
 
 	char *uri = NULL;
 	api_enum api = FS_UPDATE;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_user_id(api, &uri, user_id);
@@ -2986,7 +2949,7 @@ Example Values: noradio
 
 	char *uri = NULL;
 	api_enum api = FS_SHOW;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_source_id(api, &uri, source_id);
@@ -3073,7 +3036,7 @@ Example Values: false
 
 	char *uri = NULL;
 	api_enum api = FRIENDS_LIST;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_user_id(api, &uri, user_id);
@@ -3161,7 +3124,7 @@ Example Values: false
 
 	char *uri = NULL;
 	api_enum api = FOLLOWERS_LIST;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_user_id(api, &uri, user_id);
@@ -3197,7 +3160,7 @@ https://api.twitter.com/1.1/account/settings.json
 
 	char *uri = NULL;
 	api_enum api = ACCOUNT_SETTINGS;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	int ret = http_request(uri, GET, res);
@@ -3241,7 +3204,7 @@ Example Values: true
 
 	char *uri = NULL;
 	api_enum api = ACCOUNT_VERIFY_CREDEBTIALS;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_include_entities(api, &uri, include_entities);
@@ -3319,7 +3282,7 @@ Example Values: it, en, es
 
 	char *uri = NULL;
 	api_enum api = ACCOUNT_SETTINGS;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_trend_location_woeid(api, &uri, trend_location_woeid);
@@ -3369,7 +3332,7 @@ Example Values: true
 
 	char *uri = NULL;
 	api_enum api = ACCOUNT_UPDATE_DELIVERY_DEVICE;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_device_str(api, &uri, device);
@@ -3443,7 +3406,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 
 	char *uri = NULL;
 	api_enum api = ACCOUNT_UPDATE_PROFILE;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_name(api, &uri, name);
@@ -3528,7 +3491,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 
 	char *uri = NULL;
 	api_enum api = ACCOUNT_UPDATE_PROFILE_COLORS;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_profile_background_color(api, &uri, profile_background_color);
@@ -3588,7 +3551,7 @@ Example Values: 12893764510938
 
 	char *uri = NULL;
 	api_enum api = BLOCKS_LIST;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_include_entities(api, &uri, include_entities);
@@ -3637,7 +3600,7 @@ Example Values: 12893764510938
 
 	char *uri = NULL;
 	api_enum api = BLOCKS_IDS;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_stringify_ids(api, &uri, stringify_ids);
@@ -3694,7 +3657,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 
 	char *uri = NULL;
 	api_enum api = BLOCKS_CREATE;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_screen_name(api, &uri, screen_name);
@@ -3757,7 +3720,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 
 	char *uri = NULL;
 	api_enum api = BLOCKS_DESTROY;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_screen_name(api, &uri, screen_name);
@@ -3812,7 +3775,7 @@ Example Values: false
 
 	char *uri = NULL;
 	api_enum api = USERS_LOOKUP;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_screen_name(api, &uri, screen_name);
@@ -3867,7 +3830,7 @@ Example Values: false
 
 	char *uri = NULL;
 	api_enum api = USERS_SHOW;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_user_id(api, &uri, user_id);
@@ -3928,7 +3891,7 @@ Example Values: false
 
 	char *uri = NULL;
 	api_enum api = USERS_SEARCH;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_q(api, &uri, q);
@@ -3983,7 +3946,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 
 	char *uri = NULL;
 	api_enum api = USERS_CONTRIBUTEES;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_user_id(api, &uri, user_id);
@@ -4042,7 +4005,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 
 	char *uri = NULL;
 	api_enum api = USERS_CONTRIBUTORS;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_user_id(api, &uri, user_id);
@@ -4075,7 +4038,7 @@ https://api.twitter.com/1.1/account/remove_profile_banner.json
 
 	char *uri = NULL;
 	api_enum api = ACCOUNT_REMOVE_PROFILE_BANNER;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	int ret = http_request(uri, POST, res);
@@ -4125,7 +4088,7 @@ Example Values: noradio
 
 	char *uri = NULL;
 	api_enum api = USERS_PROFILE_BANNER;
-	alloc_strcat(&uri, api_uri_1_1); 
+	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_user_id(api, &uri, user_id);
@@ -4139,4 +4102,3 @@ Example Values: noradio
 }
 
 /*--- Streaming API ---*/
-
