@@ -10,65 +10,10 @@ enum {
 };
 
 typedef enum {
-	STATUSES_MENTIONS_TIMELINE,
-	STATUSES_USER_TIMELINE,
-	STATUSES_HOME_TIMELINE,
-	STATUSES_RETWEETS_OF_ME,
-	STATUSES_RETWEETS_BY_ID,
-	STATUSES_SHOW_BY_ID,
-	STATUSES_DESTROY_BY_ID,
-	STATUSES_UPDATE,
-	STATUSES_RETWEET_BY_ID,
-	STATUSES_UPDATE_WITH_MEDIA,
-	STATUSES_OEMBED,
-	STATUSES_RETWEETERS_IDS,
-	SEARCH_TWEETS,
-	DIRECT_MESSAGES,
-	DM_SENT,
-	DM_SHOW,
-	DM_DESTROY,
-	DM_NEW,
-	FS_NO_RETWEETS_IDS,
-	FRIENDS_IDS,
-	FOLLOWERS_IDS,
-	FS_LOOKUP,
-	FS_INCOMING,
-	FS_OUTGOING,
-	FS_CREATE,
-	FS_DESTROY,
-	FS_UPDATE,
-	FS_SHOW,
-	FRIENDS_LIST,
-	FOLLOWERS_LIST,
-	ACCOUNT_SETTINGS,
-	ACCOUNT_VERIFY_CREDEBTIALS,
-	ACCOUNT_UPDATE_DELIVERY_DEVICE,
-	ACCOUNT_UPDATE_PROFILE,
-	ACCOUNT_UPDATE_PROFILE_BACKGROUND_IMAGE,
-	ACCOUNT_UPDATE_PROFILE_COLORS,
-	ACCOUNT_UPDATE_PROFILE_IMAGE,
-	BLOCKS_LIST,
-	BLOCKS_IDS,
-	BLOCKS_CREATE,
-	BLOCKS_DESTROY,
-	USERS_LOOKUP,
-	USERS_SHOW,
-	USERS_SEARCH,
-	USERS_CONTRIBUTEES,
-	USERS_CONTRIBUTORS,
-	ACCOUNT_REMOVE_PROFILE_BANNER,
-	ACCOUNT_UPDATE_PROFILE_BANNER,
-	USERS_PROFILE_BANNER,
-	NUM_OF_APIS
+#define uri(const, str) const,
+#include "api_uri.h"
+NUM_OF_APIS
 } api_enum;
-
-typedef enum {
-	STATUSES_FILTER,
-	STATUSES_SAMPLE,
-	USER,
-	NUM_OF_STREAM
-} stream_enum;
-
 
 typedef struct {
 		char const *c_key;
@@ -102,9 +47,11 @@ typedef struct GEOCODE {
 #define KM "km"
 #define JA "ja"
 
-#define MIXED 1
-#define RECENT 2
-#define POPULAR 4
+enum {
+	MIXED = 1,
+	RECENT = 2,
+	POPULAR = 4,
+}
 
 #define SMS "sms"
 #define NONE "none"
@@ -168,13 +115,13 @@ int get_statuses_show_by_id (
 	int include_my_retweet, //optional. if not -1, add it to argument.
 	int include_entities //optional. if not -1, add it to argument.
 	);
-	
+
 int post_statuses_destroy_by_id (
 	tweet_id_t id, //required
 	char **res, //response
 	int trim_user //optional. if not -1, add it to argument.
 	);
-	
+
 int post_statuses_update(
 	char *update, //required
 	char **res, // response
@@ -206,7 +153,7 @@ int get_statuses_oembed (
 	char *related, //optional? If it is valid, add it to argument.
 	char *lang //optional? If it is valid, add it to argument.
 	);
-	
+
 int get_statuses_retweeters_ids (
 	tweet_id_t id, //required
 	char **res, //response
