@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <locale.h>
 
 #include <oauth.h>
 #include <curl/curl.h>
@@ -33,6 +34,7 @@ int fini(void) {
 
 int main(void) {
 
+	setlocale(LC_CTYPE,"");
 	init();
 	border(0x7c, 0x7c, 0x2d ,0x2d, 0x2b, 0x2b ,0x2b, 0x2b);
 	char *res = NULL;
@@ -41,7 +43,6 @@ int main(void) {
 
 	json_error_t json_err;
 	json_t *result = json_loads(res, 0, &json_err);
-	//puts(res);
 
 	json_t *tweet;
 	int i = 0;
