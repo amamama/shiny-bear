@@ -21,22 +21,20 @@ typedef struct user_info_list_struct {
 static user_info_list *info = NULL;
 static user_info_list *current_user = NULL;
 
-static user_info_list *init_user_info_list (user_info_list *info) {
-	info->next = NULL;
-	info->keys = (oauth_keys){NULL, NULL, NULL, NULL};
+static user_info_list *init_user_info_list (oauth_keys keys) {
+	user_info_list *tmp = (user_info_list *)malloc(sizeof(user_info_list));
+	if (!tmp) {
+		fprintf(stderr, "malloc failed\n");
+	}
+	tmp->next = NULL;
+	tmp->keys = keys;
 
-	return info;
+	return tmp;
 }
 
 oauth_keys register_keys(oauth_keys keys) {
 	if (!info) {
-		user_info_list *tmp = (user_info_list *)malloc(sizeof(user_info_list));
-		if (!tmp) {
-			fprintf(stderr, "malloc failed\n");
-		}
-		info = tmp;
-		init_user_info_list(tmp);
-		tmp->keys = keys;
+		info = init_user_info_list(keys);
 	}
 
 	bool isregistered = false;
@@ -49,14 +47,8 @@ oauth_keys register_keys(oauth_keys keys) {
 	}
 
 	if (!isregistered) {
-		user_info_list *tmp = (user_info_list *)malloc(sizeof(user_info_list));
-		if (!tmp) {
-			fprintf(stderr, "malloc failed\n");
-		}
-		info->next = tmp;
-		init_user_info_list(tmp);
-		tmp->keys = keys;
-		current_user = tmp;
+		info->next = init_user_info_list(keys);
+		current_user = info->next;
 	}
 
 	return keys;
@@ -344,7 +336,7 @@ static char **add_in_reply_to_status_id(api_enum api, char **uri, tweet_id_t in_
 	return uri;
 }
 
-static char **add_coods(api_enum api, char **uri, struct GEOCODE l_l) {
+static char **add_coods(api_enum api, char **uri, geocode l_l) {
 	if (!((int)(fabs(l_l.latitude)) < 90 && (int)(fabs(l_l.longitude)) < 180)) {
 		return uri;
 	}
@@ -526,7 +518,7 @@ static char **add_q(api_enum api, char **uri, char *q){
 	return uri;
 }
 
-static char **add_geocode(api_enum api, char **uri, struct GEOCODE geocode) {
+static char **add_geocode(api_enum api, char **uri, geocode geocode) {
 	if (!((int)(fabs(geocode.latitude)) < 90 && (int)(fabs(geocode.longitude)) < 180 && geocode.radius != 0 && geocode.unit && *geocode.unit)) {
 		return uri;
 	}
@@ -1567,7 +1559,7 @@ int post_statuses_update(
 	char **res, // response
 	tweet_id_t in_reply_to_status_id, //optional. if not 0, add it to argument.
 	int do_add_l_l, //add it. whether add l_l to argument.
-	struct GEOCODE l_l, //optional. if it is valid figure, add it to argument.
+	geocode l_l, //optional. if it is valid figure, add it to argument.
 	tweet_id_t place_id, //optional. if not 0, add it to argument.
 	int display_coordinates, //optional. if not -1, add it to argument.
 	int trim_user //optional. if not -1, add it to argument.
@@ -1724,7 +1716,7 @@ int get_statuses_oembed (
 	int hide_media, //optional? If not -1, add it to argument.
 	int hide_thread, //optional? If not -1, add it to argument.
 	int omit_script, //optional? If not -1, add it to argument.
-	enum ALIGN align, //optional? If not NONE, add it to argument.
+	align align, //optional? If not NONE, add it to argument.
 	char *related, //optional? If it is valid, add it to argument.
 	char *lang //optional? If it is valid, add it to argument.
 	) {
@@ -1906,7 +1898,7 @@ Example Values: true
 int get_search_tweets (
 	char *q, //required
 	char **res, //response
-	struct GEOCODE geocode, //optional. If it is valid, add it to argument.
+	geocode geocode, //optional. If it is valid, add it to argument.
 	char *lang, //optional. If not 0, add it to argument.
 	char *locale, //optional. If not 0, add it to argument. Only ja is currently effective
 	int result_type, //optional. If not 0, add it to argument. 1 = "mixed",2="recent",4="popular"

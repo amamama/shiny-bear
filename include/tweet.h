@@ -12,6 +12,7 @@ enum {
 typedef enum {
 #define uri(const, str) const,
 #include "api_uri.h"
+#undef uri
 NUM_OF_APIS
 } api_enum;
 
@@ -29,14 +30,14 @@ oauth_keys current_keys(void);
 int bear_init(char const *, char const *, char const *, char const *);
 int bear_cleanup(void);
 
-typedef enum ALIGN {
+typedef enum {
 	NONE,
 	LEFT,
 	RIGHT,
 	CENTER,
 } align;
 
-typedef struct GEOCODE {
+typedef struct {
 		double latitude;
 		double longitude;
 		int radius;
@@ -51,7 +52,7 @@ enum {
 	MIXED = 1,
 	RECENT = 2,
 	POPULAR = 4,
-}
+};
 
 #define SMS "sms"
 #define NONE "none"
@@ -127,7 +128,7 @@ int post_statuses_update(
 	char **res, // response
 	tweet_id_t in_reply_to_status_id, //optional. if not 0, add it to argument.
 	int do_add_l_l, //add it. whether add l_l to argument.
-	struct GEOCODE l_l, //optional. if it is valid figure, add it to argument.
+	geocode l_l, //optional. if it is valid figure, add it to argument.
 	tweet_id_t place_id, //optional. if not 0, add it to argument.
 	int display_coordinates, //optional. if not -1, add it to argument.
 	int trim_user //optional. if not -1, add it to argument.
@@ -149,7 +150,7 @@ int get_statuses_oembed (
 	int hide_media, //optional? If not -1, add it to argument.
 	int hide_thread, //optional? If not -1, add it to argument.
 	int omit_script, //optional? If not -1, add it to argument.
-	enum ALIGN align, //optional? If not NONE, add it to argument.
+	align align, //optional? If not NONE, add it to argument.
 	char *related, //optional? If it is valid, add it to argument.
 	char *lang //optional? If it is valid, add it to argument.
 	);
@@ -164,7 +165,7 @@ int get_statuses_retweeters_ids (
 int get_search_tweets (
 	char *q, //required
 	char **res, //response
-	struct GEOCODE geocode, //optional. If it is valid, add it to argument.
+	geocode geocode, //optional. If it is valid, add it to argument.
 	char *lang, //optional. If not 0, add it to argument.
 	char *locale, //optional. If not 0, add it to argument. Only ja is currently effective
 	int result_type, //optional. If not 0, add it to argument. 1 = "mixed",2="recent",4="popular"
