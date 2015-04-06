@@ -3,7 +3,7 @@ CC		?= cc
 CFLAGS		:= -ansi -std=c11 -W -Wall -Werror -O2 $(CFLAGS)
 LDFLAGS		:= -lcurl -loauth $(LDFALGS)#-lcrypto
 MAINCFLAGS	:= $(MAINCFLAGS)
-MAINLDFLAGS	:= -lncurses -ljansson $(LDFLAGS)
+MAINLDFLAGS	:= -lncursesw -ljansson $(LDFLAGS)
 
 SRC_DIR		:= ./src
 SRCS		:= $(notdir $(wildcard $(SRC_DIR)/*.c))
