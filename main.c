@@ -12,7 +12,7 @@
 #include <jansson.h>
 
 #include "include/tweet.h"
-#include "keys/mykey.h"
+#include "mykey.h"
 
 int init(void) {
 	bear_init(c_key, c_sec, t_key, t_sec);
@@ -38,7 +38,7 @@ int main(void) {
 	init();
 	border(0x7c, 0x7c, 0x2d ,0x2d, 0x2b, 0x2b ,0x2b, 0x2b);
 	char *res = NULL;
-	int ret = get_statuses_user_timeline(&res, 0, "amamama_bot", 0, 0, 0, -1, -1, -1, -1);
+	int ret = get_statuses_user_timeline(&res, 0, "amama_bot", 0, 0, 0, -1, -1, -1, -1);
 	mvaddch(1,1,ret + 0x30);
 
 	json_error_t json_err;

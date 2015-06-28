@@ -1,11 +1,12 @@
 // vim: set foldmethod=syntax :
 #include <errno.h>
-
+#include <inttypes.h>
+#include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <math.h>
 
 #include <oauth.h>
 #include <curl/curl.h>
@@ -13,8 +14,8 @@
 #include "tweet.h"
 #include "utils.h"
 
-typedef struct user_info_list_struct {
-	struct user_info_list_struct *next;
+typedef struct user_info_list {
+	struct user_info_list *next;
 	oauth_keys keys;
 } user_info_list;
 
@@ -117,8 +118,8 @@ static int http_request(char const *u, int p, char **rep) {
 	if (ret != CURLE_OK) {
 		fprintf (stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror (ret));
 	}
-	free(request);request = NULL;
-	free(post);post = NULL;
+	free_and_assign(request);
+	free_and_assign(post);
 	curl_easy_cleanup(curl);
 
 	return ret;
@@ -137,7 +138,9 @@ inline static char **add_que_or_amp(api_enum api, char **uri) {
 	return uri;
 }
 
-static char **add_count(api_enum api, char **uri, int count) {
+#define add_args(type, arg) static char **add_##arg(api_enum api, char **uri, type arg)
+
+add_args(int, count) {
 	if (!count) {
 		return uri;
 	}
@@ -150,7 +153,7 @@ static char **add_count(api_enum api, char **uri, int count) {
 	return uri;
 }
 
-static char **add_id(api_enum api, char **uri, tweet_id_t id) {
+add_args(tweet_id_t, id) {
 	if (!id) {
 		return uri;
 	}
@@ -163,7 +166,7 @@ static char **add_id(api_enum api, char **uri, tweet_id_t id) {
 	return uri;
 }
 
-static char **add_since_id(api_enum api, char **uri, tweet_id_t since_id) {
+add_args(tweet_id_t, since_id) {
 	if (!since_id) {
 		return uri;
 	}
@@ -176,7 +179,7 @@ static char **add_since_id(api_enum api, char **uri, tweet_id_t since_id) {
 	return uri;
 }
 
-static char **add_max_id(api_enum api, char **uri, tweet_id_t max_id) {
+add_args(tweet_id_t, max_id) {
 	if (!max_id) {
 		return uri;
 	}
@@ -189,7 +192,7 @@ static char **add_max_id(api_enum api, char **uri, tweet_id_t max_id) {
 	return uri;
 }
 
-static char **add_trim_user(api_enum api, char **uri, int trim_user) {
+add_args(int, trim_user) {
 	if (trim_user == -1) {
 		return uri;
 	}
@@ -202,7 +205,7 @@ static char **add_trim_user(api_enum api, char **uri, int trim_user) {
 	return uri;
 }
 
-static char **add_contributor_details(api_enum api, char **uri, int contributor_details) {
+add_args(int, contributor_details) {
 	if (contributor_details == -1) {
 		return uri;
 	}
@@ -215,7 +218,7 @@ static char **add_contributor_details(api_enum api, char **uri, int contributor_
 	return uri;
 }
 
-static char **add_include_entities(api_enum api, char **uri, int include_entities) {
+add_args(int, include_entities) {
 	if (include_entities == -1) {
 		return uri;
 	}
@@ -241,7 +244,7 @@ static char **add_include_rts(api_enum api, char **uri, int include_rts, int cou
 	return uri;
 }
 
-static char **add_user_id(api_enum api, char **uri, tweet_id_t user_id) {
+add_args(tweet_id_t, user_id) {
 	if (!user_id) {
 		return uri;
 	}
@@ -254,7 +257,7 @@ static char **add_user_id(api_enum api, char **uri, tweet_id_t user_id) {
 	return uri;
 }
 
-static char **add_screen_name(api_enum api, char **uri, char *screen_name) {
+add_args(char *, screen_name) {
 	if (!(screen_name && *screen_name)) {
 		return uri;
 	}
@@ -265,7 +268,7 @@ static char **add_screen_name(api_enum api, char **uri, char *screen_name) {
 	return uri;
 }
 
-static char **add_exclude_replies(api_enum api, char **uri, int exclude_replies) {
+add_args(int, exclude_replies) {
 	if (exclude_replies == -1) {
 		return uri;
 	}
@@ -278,7 +281,7 @@ static char **add_exclude_replies(api_enum api, char **uri, int exclude_replies)
 	return uri;
 }
 
-static char **add_include_user_entities(api_enum api, char **uri, int include_user_entities) {
+add_args(int, include_user_entities) {
 	if (include_user_entities == -1) {
 		return uri;
 	}
@@ -291,7 +294,7 @@ static char **add_include_user_entities(api_enum api, char **uri, int include_us
 	return uri;
 }
 
-static char **add_include_my_retweet(api_enum api, char **uri, int include_my_retweet) {
+add_args(int, include_my_retweet) {
 	if (include_my_retweet == -1) {
 		return uri;
 	}
@@ -304,7 +307,7 @@ static char **add_include_my_retweet(api_enum api, char **uri, int include_my_re
 	return uri;
 }
 
-static char **add_status(api_enum api, char **uri, char *status) {
+add_args(char *, status) {
 	if (!(status && *status)) {
 		return uri;
 	}
@@ -317,13 +320,13 @@ static char **add_status(api_enum api, char **uri, char *status) {
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "status=");
 	alloc_strcat(uri, escaped_msg);
-	free(status_140);status_140 = NULL;
-	free(escaped_msg);escaped_msg = NULL;
+	free_and_assign(status_140);
+	free_and_assign(escaped_msg);
 
 	return uri;
 }
 
-static char **add_in_reply_to_status_id(api_enum api, char **uri, tweet_id_t in_reply_to_status_id) {
+add_args(tweet_id_t, in_reply_to_status_id) {
 	if (!in_reply_to_status_id) {
 		return uri;
 	}
@@ -336,25 +339,25 @@ static char **add_in_reply_to_status_id(api_enum api, char **uri, tweet_id_t in_
 	return uri;
 }
 
-static char **add_coods(api_enum api, char **uri, geocode l_l) {
-	if (!((int)(fabs(l_l.latitude)) < 90 && (int)(fabs(l_l.longitude)) < 180)) {
+add_args(geocode, coods) {
+	if (!((int)(fabs(coods.latitude)) < 90 && (int)(fabs(coods.longitude)) < 180)) {
 		return uri;
 	}
 	char latitude[32];
 	char longitude[32];
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "latitude=");
-	snprintf(latitude, sizeof(latitude), "%2.12f", l_l.latitude);
+	snprintf(latitude, sizeof(latitude), "%2.12f", coods.latitude);
 	alloc_strcat(uri, latitude);
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "longitude=");
-	snprintf(longitude, sizeof(longitude), "%2.12f", l_l.longitude);
+	snprintf(longitude, sizeof(longitude), "%2.12f", coods.longitude);
 	alloc_strcat(uri, longitude);
 
 	return uri;
 }
 
-static char **add_place_id(api_enum api, char **uri, tweet_id_t place_id) {
+add_args(tweet_id_t, place_id) {
 	if (!place_id) {
 		return uri;
 	}
@@ -367,7 +370,7 @@ static char **add_place_id(api_enum api, char **uri, tweet_id_t place_id) {
 	return uri;
 }
 
-static char **add_display_coordinates(api_enum api, char **uri, int display_coordinates) {
+add_args(int, display_coordinates) {
 	if (display_coordinates == -1) {
 		return uri;
 	}
@@ -380,7 +383,7 @@ static char **add_display_coordinates(api_enum api, char **uri, int display_coor
 	return uri;
 }
 
-static char **add_url(api_enum api, char **uri, char *url) {
+add_args(char *, url) {
 	if (!(url && *url)) {
 		return uri;
 	}
@@ -388,12 +391,12 @@ static char **add_url(api_enum api, char **uri, char *url) {
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "url=");
 	alloc_strcat(uri, escaped_msg);
-	free(escaped_msg);escaped_msg = NULL;
+	free_and_assign(escaped_msg);
 
 	return uri;
 }
 
-static char **add_maxwidth(api_enum api, char **uri, int maxwidth) {
+add_args(int, maxwidth) {
 	if (!(249 < maxwidth && maxwidth < 551)) {
 		return uri;
 	}
@@ -406,7 +409,7 @@ static char **add_maxwidth(api_enum api, char **uri, int maxwidth) {
 	return uri;
 }
 
-static char **add_hide_media(api_enum api, char **uri, int hide_media) {
+add_args(int, hide_media) {
 	if (hide_media == -1) {
 		return uri;
 	}
@@ -419,7 +422,7 @@ static char **add_hide_media(api_enum api, char **uri, int hide_media) {
 	return uri;
 }
 
-static char **add_hide_thread(api_enum api, char **uri, int hide_thread) {
+add_args(int, hide_thread) {
 	if (hide_thread == -1) {
 		return uri;
 	}
@@ -432,7 +435,7 @@ static char **add_hide_thread(api_enum api, char **uri, int hide_thread) {
 	return uri;
 }
 
-static char **add_omit_script(api_enum api, char **uri, int omit_script) {
+add_args(int, omit_script) {
 	if (omit_script == -1) {
 		return uri;
 	}
@@ -445,7 +448,7 @@ static char **add_omit_script(api_enum api, char **uri, int omit_script) {
 	return uri;
 }
 
-static char **add_align(api_enum api, char **uri, int align) {
+add_args(int, align) {
 	if (align > (CENTER + 1) || align == -1) {
 		return uri;
 	}
@@ -457,7 +460,7 @@ static char **add_align(api_enum api, char **uri, int align) {
 	return uri;
 }
 
-static char **add_related(api_enum api, char **uri, char *related) {
+add_args(char *, related) {
 	if (!(related && *related)) {
 		return uri;
 	}
@@ -468,7 +471,7 @@ static char **add_related(api_enum api, char **uri, char *related) {
 	return uri;
 }
 
-static char **add_lang(api_enum api, char **uri, char *lang) {
+add_args(char *, lang) {
 	if (!(lang && *lang)) {
 		return uri;
 	}
@@ -479,7 +482,7 @@ static char **add_lang(api_enum api, char **uri, char *lang) {
 	return uri;
 }
 
-static char **add_cursor(api_enum api, char **uri, cursor_t cursor) {
+add_args(cursor_t, cursor) {
 	if (!cursor) {
 		return uri;
 	}
@@ -492,7 +495,7 @@ static char **add_cursor(api_enum api, char **uri, cursor_t cursor) {
 	return uri;
 }
 
-static char **add_stringify_ids(api_enum api, char **uri, int stringify_ids) {
+add_args(int, stringify_ids) {
 	if (stringify_ids == -1) {
 		return uri;
 	}
@@ -505,7 +508,7 @@ static char **add_stringify_ids(api_enum api, char **uri, int stringify_ids) {
 	return uri;
 }
 
-static char **add_q(api_enum api, char **uri, char *q){
+add_args(char *, q) {
 	if(!(q && *q)) {
 		return uri;
 	}
@@ -513,12 +516,12 @@ static char **add_q(api_enum api, char **uri, char *q){
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "q=");
 	alloc_strcat(uri, escaped_msg);
-	free(escaped_msg);escaped_msg = NULL;
+	free_and_assign(escaped_msg);
 
 	return uri;
 }
 
-static char **add_geocode(api_enum api, char **uri, geocode geocode) {
+add_args(geocode, geocode) {
 	if (!((int)(fabs(geocode.latitude)) < 90 && (int)(fabs(geocode.longitude)) < 180 && geocode.radius != 0 && geocode.unit && *geocode.unit)) {
 		return uri;
 	}
@@ -538,7 +541,7 @@ static char **add_geocode(api_enum api, char **uri, geocode geocode) {
 	return uri;
 }
 
-static char **add_locale(api_enum api, char **uri, char *locale) {
+add_args(char *, locale) {
 	if (!(locale && *locale)) {
 		return uri;
 	}
@@ -549,7 +552,7 @@ static char **add_locale(api_enum api, char **uri, char *locale) {
 	return uri;
 }
 
-static char **add_result_type(api_enum api, char **uri, int result_type) {
+add_args(int, result_type) {
 	if (!result_type) {
 		return uri;
 	}
@@ -574,7 +577,7 @@ static char **add_result_type(api_enum api, char **uri, int result_type) {
 	return uri;
 }
 
-static char **add_until(api_enum api, char **uri, char *until) {
+add_args(char *, until) {
 	if (!(until && *until)) {
 		return uri;
 	}
@@ -585,7 +588,7 @@ static char **add_until(api_enum api, char **uri, char *until) {
 	return uri;
 }
 
-static char **add_callback(api_enum api, char **uri, char *callback) {
+add_args(char *, callback) {
 	if (!(callback && *callback)) {
 		return uri;
 	}
@@ -596,7 +599,7 @@ static char **add_callback(api_enum api, char **uri, char *callback) {
 	return uri;
 }
 
-static char **add_skip_status(api_enum api, char **uri, int skip_status) {
+add_args(int, skip_status) {
 	if (skip_status == -1) {
 		return uri;
 	}
@@ -609,7 +612,7 @@ static char **add_skip_status(api_enum api, char **uri, int skip_status) {
 	return uri;
 }
 
-static char **add_pages(api_enum api, char **uri, int pages) {
+add_args(int, pages) {
 	if (!pages) {
 		return uri;
 	}
@@ -622,7 +625,7 @@ static char **add_pages(api_enum api, char **uri, int pages) {
 	return uri;
 }
 
-static char **add_text(api_enum api, char **uri, char *text) {
+add_args(char *, text) {
 	if (!(text && *text)) {
 		return uri;
 	}
@@ -630,36 +633,36 @@ static char **add_text(api_enum api, char **uri, char *text) {
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "text=");
 	alloc_strcat(uri, escaped_msg);
-	free(escaped_msg);escaped_msg = NULL;
+	free_and_assign(escaped_msg);
 
 	return uri;
 }
 
-static char **add_count_upto_5000(api_enum api, char **uri, int count) {
-	if (!count) {
+add_args(int, count_upto_5000) {
+	if (!count_upto_5000) {
 		return uri;
 	}
 	char cnt[8] = {0};
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "count=");
-	snprintf(cnt, sizeof(cnt), "%d", count<5001?count:5000);
+	snprintf(cnt, sizeof(cnt), "%d", count_upto_5000<5001?count_upto_5000:5000);
 	alloc_strcat(uri, cnt);
 
 	return uri;
 }
 
-static char **add_user_id_str(api_enum api, char **uri, char *user_id) {
-	if (!(user_id && *user_id)) {
+add_args(char *, user_id_str) {
+	if (!(user_id_str && *user_id_str)) {
 		return uri;
 	}
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "user_id=");
-	alloc_strcat(uri, user_id);
+	alloc_strcat(uri, user_id_str);
 
 	return uri;
 }
 
-static char **add_follow(api_enum api, char **uri, int follow) {
+add_args(int, follow) {
 	if (follow == -1) {
 		return uri;
 	}
@@ -672,7 +675,7 @@ static char **add_follow(api_enum api, char **uri, int follow) {
 	return uri;
 }
 
-static char **add_device(api_enum api, char **uri, int device) {
+add_args(int, device) {
 	if (device == -1) {
 		return uri;
 	}
@@ -685,7 +688,7 @@ static char **add_device(api_enum api, char **uri, int device) {
 	return uri;
 }
 
-static char **add_retweets(api_enum api, char **uri, int retweets) {
+add_args(int, retweets) {
 	if (retweets == -1) {
 		return uri;
 	}
@@ -698,7 +701,7 @@ static char **add_retweets(api_enum api, char **uri, int retweets) {
 	return uri;
 }
 
-static char **add_source_id(api_enum api, char **uri, tweet_id_t source_id) {
+add_args(tweet_id_t, source_id) {
 	if (!source_id) {
 		return uri;
 	}
@@ -711,7 +714,7 @@ static char **add_source_id(api_enum api, char **uri, tweet_id_t source_id) {
 	return uri;
 }
 
-static char **add_source_screen_name(api_enum api, char **uri, char *source_screen_name) {
+add_args(char *, source_screen_name) {
 	if (!(source_screen_name && *source_screen_name)) {
 		return uri;
 	}
@@ -722,7 +725,7 @@ static char **add_source_screen_name(api_enum api, char **uri, char *source_scre
 	return uri;
 }
 
-static char **add_target_id(api_enum api, char **uri, tweet_id_t target_id) {
+add_args(tweet_id_t, target_id) {
 	if (!target_id) {
 		return uri;
 	}
@@ -735,7 +738,7 @@ static char **add_target_id(api_enum api, char **uri, tweet_id_t target_id) {
 	return uri;
 }
 
-static char **add_target_screen_name(api_enum api, char **uri, char *target_screen_name) {
+add_args(char *, target_screen_name) {
 	if (!(target_screen_name && *target_screen_name)) {
 		return uri;
 	}
@@ -746,7 +749,7 @@ static char **add_target_screen_name(api_enum api, char **uri, char *target_scre
 	return uri;
 }
 
-static char **add_trend_location_woeid(api_enum api, char **uri, int trend_location_woeid) {
+add_args(int, trend_location_woeid) {
 	if (!trend_location_woeid) {
 		return uri;
 	}
@@ -759,8 +762,8 @@ static char **add_trend_location_woeid(api_enum api, char **uri, int trend_locat
 	return uri;
 }
 
-static char **add_sleep_time_enabled(api_enum api, char **uri, int sleep_time_enabled) {
-	if (!sleep_time_enabled == -1) {
+add_args(int, sleep_time_enabled) {
+	if (!(sleep_time_enabled == -1)) {
 		return uri;
 	}
 	char boolean[2];
@@ -772,7 +775,7 @@ static char **add_sleep_time_enabled(api_enum api, char **uri, int sleep_time_en
 	return uri;
 }
 
-static char **add_start_sleep_time(api_enum api, char **uri, int start_sleep_time) {
+add_args(int, start_sleep_time) {
 	if (!start_sleep_time) {
 		return uri;
 	}
@@ -785,7 +788,7 @@ static char **add_start_sleep_time(api_enum api, char **uri, int start_sleep_tim
 	return uri;
 }
 
-static char **add_end_sleep_time(api_enum api, char **uri, int end_sleep_time) {
+add_args(int, end_sleep_time) {
 	if (!end_sleep_time) {
 		return uri;
 	}
@@ -798,7 +801,7 @@ static char **add_end_sleep_time(api_enum api, char **uri, int end_sleep_time) {
 	return uri;
 }
 
-static char **add_time_zone(api_enum api, char **uri, char *time_zone) {
+add_args(char *, time_zone) {
 	if (!(time_zone && *time_zone)) {
 		return uri;
 	}
@@ -809,18 +812,18 @@ static char **add_time_zone(api_enum api, char **uri, char *time_zone) {
 	return uri;
 }
 
-static char **add_device_str(api_enum api, char **uri, char *device) {
-	if (!(device && *device)) {
+add_args(char *, device_str) {
+	if (!(device_str && *device_str)) {
 		return uri;
 	}
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "device=");
-	alloc_strcat(uri, device);
+	alloc_strcat(uri, device_str);
 
 	return uri;
 }
 
-static char **add_name(api_enum api, char **uri, char *name) {
+add_args(char *, name) {
 	if (!(name && *name)) {
 		return uri;
 	}
@@ -833,18 +836,18 @@ static char **add_name(api_enum api, char **uri, char *name) {
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "name=");
 	alloc_strcat(uri, escaped_msg);
-	free(name_20);name_20 = NULL;
-	free(escaped_msg);escaped_msg = NULL;
+	free_and_assign(name_20);
+	free_and_assign(escaped_msg);
 
 	return uri;
 }
 
-static char **add_url_upto_100(api_enum api, char **uri, char *url){
-	if (!(url && *url)) {
+add_args(char *, url_upto_100) {
+	if (!(url_upto_100 && *url_upto_100)) {
 		return uri;
 	}
 	char *url_100 = NULL;
-	alloc_strcat(&url_100, url);
+	alloc_strcat(&url_100, url_upto_100);
 	if (utf8_strlen(url_100) > 100) {
 		*(utf8_offset_to_pointer(url_100, 100)) = '\0';
 	}
@@ -852,13 +855,13 @@ static char **add_url_upto_100(api_enum api, char **uri, char *url){
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "url=");
 	alloc_strcat(uri, escaped_msg);
-	free(url_100);url_100 = NULL;
-	free(escaped_msg);escaped_msg = NULL;
+	free_and_assign(url_100);
+	free_and_assign(escaped_msg);
 
 	return uri;
 }
 
-static char **add_location(api_enum api, char **uri, char *location){
+add_args(char *, location) {
 	if (!(location && *location)) {
 		return uri;
 	}
@@ -871,13 +874,13 @@ static char **add_location(api_enum api, char **uri, char *location){
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "location=");
 	alloc_strcat(uri, escaped_msg);
-	free(location_30);location_30 = NULL;
-	free(escaped_msg);escaped_msg = NULL;
+	free_and_assign(location_30);
+	free_and_assign(escaped_msg);
 
 	return uri;
 }
 
-static char **add_description(api_enum api, char **uri, char *description){
+add_args(char *, description) {
 	if (!(description && *description)) {
 		return uri;
 	}
@@ -890,20 +893,20 @@ static char **add_description(api_enum api, char **uri, char *description){
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "description=");
 	alloc_strcat(uri, escaped_msg);
-	free(description_160);description_160 = NULL;
-	free(escaped_msg);escaped_msg = NULL;
+	free_and_assign(description_160);
+	free_and_assign(escaped_msg);
 
 	return uri;
 }
 
-static inline char **add_color(char **uri, int color, int digit){
+static inline char **add_color(char **uri, uint32_t color, int digit){
 	char hex[7] = {0};
-	snprintf(hex, sizeof(hex), "%0*x", digit?digit:6, color);
+	snprintf(hex, sizeof(hex), "%0*" PRIx32, digit?digit:6, color);
 	alloc_strcat(uri, hex);
 	return uri;
 }
 
-static char **add_profile_background_color(api_enum api, char **uri, long profile_background_color){
+add_args(int32_t, profile_background_color) {
 	if (profile_background_color < 0) {
 		return uri;
 	}
@@ -914,7 +917,7 @@ static char **add_profile_background_color(api_enum api, char **uri, long profil
 	return uri;
 }
 
-static char **add_profile_link_color(api_enum api, char **uri, long profile_link_color){
+add_args(int32_t, profile_link_color) {
 	if (profile_link_color < 0) {
 		return uri;
 	}
@@ -925,7 +928,7 @@ static char **add_profile_link_color(api_enum api, char **uri, long profile_link
 	return uri;
 }
 
-static char **add_profile_sidebar_border_color(api_enum api, char **uri, long profile_sidebar_border_color){
+add_args(int32_t, profile_sidebar_border_color) {
 	if (profile_sidebar_border_color < 0) {
 		return uri;
 	}
@@ -936,7 +939,7 @@ static char **add_profile_sidebar_border_color(api_enum api, char **uri, long pr
 	return uri;
 }
 
-static char **add_profile_sidebar_fill_color(api_enum api, char **uri, long profile_sidebar_fill_color){
+add_args(int32_t, profile_sidebar_fill_color) {
 	if (profile_sidebar_fill_color < 0) {
 		return uri;
 	}
@@ -947,8 +950,8 @@ static char **add_profile_sidebar_fill_color(api_enum api, char **uri, long prof
 	return uri;
 }
 
-static char **add_profile_text_color(api_enum api, char **uri, long profile_text_color){
-	if (profile_text_color < -1) {
+add_args(int32_t, profile_text_color) {
+	if (profile_text_color < 0) {
 		return uri;
 	}
 	add_que_or_amp(api, uri);
@@ -958,7 +961,7 @@ static char **add_profile_text_color(api_enum api, char **uri, long profile_text
 	return uri;
 }
 
-static char **add_page(api_enum api, char **uri, int page) {
+add_args(int, page) {
 	if (!page) {
 		return uri;
 	}
@@ -971,18 +974,21 @@ static char **add_page(api_enum api, char **uri, int page) {
 	return uri;
 }
 
-static char **add_count_upto_20(api_enum api, char **uri, int count) {
-	if (!count) {
+add_args(int, count_upto_20) {
+	if (!count_upto_20) {
 		return uri;
 	}
 	char cnt[8] = {0};
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "count=");
-	snprintf(cnt, sizeof(cnt), "%d", count<21?count:20);
+	snprintf(cnt, sizeof(cnt), "%d", count_upto_20<21?count_upto_20:20);
 	alloc_strcat(uri, cnt);
 
 	return uri;
 }
+
+
+#undef add_args
 
 /*--- Streaming API ---*/
 
@@ -1086,7 +1092,7 @@ Example Values: false
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -1195,7 +1201,7 @@ Example Values: false
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -1282,7 +1288,7 @@ Example Values: false
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -1362,7 +1368,7 @@ Example Values: false
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -1426,7 +1432,7 @@ Example Values: true
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -1494,7 +1500,7 @@ Example Values: false
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -1549,7 +1555,7 @@ Example Values: true
 
 	int ret = http_request(uri, POST, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -1646,7 +1652,7 @@ Example Values: true
 
 	int ret = http_request(uri, POST, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -1701,7 +1707,7 @@ Example Values: true
 
 	int ret = http_request(uri, POST, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -1825,7 +1831,7 @@ Example Values: fr
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -1890,7 +1896,7 @@ Example Values: true
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -2022,7 +2028,7 @@ Example Values: processTweets
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -2091,7 +2097,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -2161,7 +2167,7 @@ Example Values: false
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -2199,7 +2205,7 @@ Example Values: 587424932
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -2245,7 +2251,7 @@ Example Values: false
 
 	int ret = http_request(uri, POST, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -2306,7 +2312,7 @@ Example Values: Meet me behind the cafeteria after school
 
 	int ret = http_request(uri, POST, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -2344,7 +2350,7 @@ Example Values: true
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -2424,7 +2430,7 @@ Example Values: 2048
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -2506,7 +2512,7 @@ Example Values: 2048
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -2553,7 +2559,7 @@ Example Values: 783214,6253282
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -2602,7 +2608,7 @@ Example Values: true
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -2650,7 +2656,7 @@ Example Values: true
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -2712,7 +2718,7 @@ Example Values: true
 
 	int ret = http_request(uri, POST, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -2765,7 +2771,7 @@ Example Values: 12345
 
 	int ret = http_request(uri, POST, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -2835,7 +2841,7 @@ Example Values: true, false
 
 	int ret = http_request(uri, POST, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -2905,7 +2911,7 @@ Example Values: noradio
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -2994,7 +3000,7 @@ Example Values: false
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -3082,7 +3088,7 @@ Example Values: false
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -3111,7 +3117,7 @@ https://api.twitter.com/1.1/account/settings.json
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -3158,7 +3164,7 @@ Example Values: true
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -3240,7 +3246,7 @@ Example Values: it, en, es
 
 	int ret = http_request(uri, POST, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -3286,7 +3292,7 @@ Example Values: true
 
 	int ret = http_request(uri, POST, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -3364,7 +3370,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 
 	int ret = http_request(uri, POST, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -3450,7 +3456,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 
 	int ret = http_request(uri, POST, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -3506,7 +3512,7 @@ Example Values: 12893764510938
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -3554,7 +3560,7 @@ Example Values: 12893764510938
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -3613,7 +3619,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 
 	int ret = http_request(uri, POST, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -3676,7 +3682,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 
 	int ret = http_request(uri, POST, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -3730,7 +3736,7 @@ Example Values: false
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -3785,7 +3791,7 @@ Example Values: false
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -3847,7 +3853,7 @@ Example Values: false
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -3902,7 +3908,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -3961,7 +3967,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 
 	int ret = http_request(uri, GET, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -3989,7 +3995,7 @@ https://api.twitter.com/1.1/account/remove_profile_banner.json
 
 	int ret = http_request(uri, POST, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }
@@ -4042,7 +4048,7 @@ Example Values: noradio
 
 	int ret = http_request(uri, POST, res);
 
-	free(uri);uri = NULL;
+	free_and_assign(uri);
 
 	return ret;
 }

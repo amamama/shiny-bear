@@ -1,6 +1,8 @@
 #ifndef __UTILS_H
 #define __UTILS_H
 
+#define free_and_assign(ptr) free(ptr),ptr = NULL
+
 char **alloc_strcat(char **dest, char const *src);
 
 char *utf8_next_char(char const * const p);
