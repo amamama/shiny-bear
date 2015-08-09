@@ -10,7 +10,7 @@ add your keys
 You must add your OAuth keys to your source.
 
 ```c
-	bear_init(&(union KEYS){.keys_array = {c_key, c_sec, t_key, t_sec}});
+	bear_init(c_key, c_sec, t_key, t_sec);
 ```
 c_key/sec is consumer_key/secret, t_key/sec is token_key/secret.
 
