@@ -10,6 +10,10 @@ add your keys
 You must add your OAuth keys to your source.
 
 ```c
+	char const *c_key = "your consumer key";
+	char const *c_sec = "your consuer secret";
+	char const *t_key = "your token key";
+	char const *t_sec = "your token secret";
 	bear_init(c_key, c_sec, t_key, t_sec);
 ```
 c_key/sec is consumer_key/secret, t_key/sec is token_key/secret.
