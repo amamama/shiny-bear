@@ -16,7 +16,7 @@ You must add your OAuth keys to your source.
 	char const *t_sec = "your token secret";
 	bear_init(c_key, c_sec, t_key, t_sec);
 ```
-c_key/sec is consumer_key/secret, t_key/sec is token_key/secret.
+c\_key/sec is consumer\_key/secret, t\_key/sec is token\_key/secret.
 
 compile
 ---
