@@ -14,66 +14,25 @@
 #include "tweet.h"
 #include "utils.h"
 
-typedef struct user_info_list {
-	struct user_info_list *next;
-	oauth_keys keys;
-} user_info_list;
-
-static user_info_list *info = NULL;
-static user_info_list *current_user = NULL;
-
-static user_info_list *init_user_info_list (oauth_keys keys) {
-	user_info_list *tmp = (user_info_list *)malloc(sizeof(user_info_list));
-	if (!tmp) {
-		fprintf(stderr, "malloc failed\n");
-	}
-	tmp->next = NULL;
-	tmp->keys = keys;
-
-	return tmp;
-}
-
+oauth_keys user_keys = {NULL, NULL, NULL, NULL};
 oauth_keys register_keys(oauth_keys keys) {
-	if (!info) {
-		info = init_user_info_list(keys);
-	}
-
-	bool isregistered = false;
-	for (user_info_list *list = info; list; list = list->next) {
-		if (!strcmp(list->keys.c_key, keys.c_key)) {
-			current_user = list;
-			isregistered = true;
-			break;
-		}
-	}
-
-	if (!isregistered) {
-		info->next = init_user_info_list(keys);
-		current_user = info->next;
-	}
-
-	return keys;
+	return user_keys = keys;
 }
 
 int check_keys(void) {
-	return current_user->keys.c_key&&current_user->keys.c_sec&&current_user->keys.t_key&&current_user->keys.t_sec;
+	return user_keys.c_key&&user_keys.c_sec&&user_keys.t_key&&user_keys.t_sec;
 }
 
 oauth_keys current_keys(void) {
-	return current_user->keys;
+	return user_keys;
 }
 
-int bear_init(char const *c_key, char const *c_sec, char const *t_key, char const *t_sec) {
-	register_keys((oauth_keys){c_key, c_sec, t_key, t_sec});
+int bear_init(oauth_keys keys) {
+	register_keys(keys);
 	return curl_global_init(CURL_GLOBAL_DEFAULT);
 }
 
 int bear_cleanup(void) {
-	for (user_info_list *list = info, *tmp; list; ) {
-		tmp = list;
-		list = list->next;
-		free(tmp);
-	}
 	curl_global_cleanup();
 	return 0;
 }
@@ -100,16 +59,14 @@ static int http_request(char const *u, int p, char **rep) {
 	}
 	char *request = NULL;
 	char *post = NULL;
+		request = oauth_sign_url2(u, p?&post:NULL, OA_HMAC, NULL, user_keys.c_key, user_keys.c_sec, user_keys.t_key, user_keys.t_sec);
 	if (p) {
-		request = oauth_sign_url2(u, &post, OA_HMAC, NULL, current_user->keys.c_key, current_user->keys.c_sec, current_user->keys.t_key, current_user->keys.t_sec);
 		curl_easy_setopt (curl, CURLOPT_POSTFIELDS, (void *) post);
-	} else {
-		request = oauth_sign_url2(u, NULL, OA_HMAC, NULL, current_user->keys.c_key, current_user->keys.c_sec, current_user->keys.t_key, current_user->keys.t_sec);
 	}
 	curl_easy_setopt (curl, CURLOPT_URL, request);
 	//is it good? i dont know.
 	curl_easy_setopt (curl, CURLOPT_SSL_VERIFYPEER, 0L);
-	if (rep ) {
+	if (rep) {
 		curl_easy_setopt (curl, CURLOPT_WRITEDATA, (void *) rep);
 		curl_easy_setopt (curl, CURLOPT_WRITEFUNCTION, write_data);
 	}

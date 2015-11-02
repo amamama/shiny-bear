@@ -14,8 +14,11 @@
 #include "include/tweet.h"
 #include "mykey.h"
 
+oauth_keys mykeys = {NULL, NULL, NULL, NULL};
+
 int init(void) {
-	bear_init(c_key, c_sec, t_key, t_sec);
+	mykeys = (oauth_keys){c_key, c_sec, t_key, t_sec};
+	bear_init(mykeys);
 
 	initscr();
 	cbreak();

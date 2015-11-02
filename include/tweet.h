@@ -27,7 +27,7 @@ oauth_keys register_keys (oauth_keys);
 int check_keys(void);
 oauth_keys current_keys(void);
 
-int bear_init(char const *, char const *, char const *, char const *);
+int bear_init(oauth_keys);
 int bear_cleanup(void);
 
 typedef enum {
