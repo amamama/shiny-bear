@@ -23,7 +23,7 @@ typedef struct {
 		char const *t_sec;
 } oauth_keys;
 
-oauth_keys register_keys (oauth_keys);
+oauth_keys register_keys(oauth_keys);
 int check_keys(void);
 oauth_keys current_keys(void);
 

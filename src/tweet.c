@@ -45,9 +45,7 @@ static size_t write_data(char *buffer, size_t size, size_t nmemb, void *rep) {
 }
 
 static int http_request(char const *u, int p, char **rep) {
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (rep && *rep) {
 		memset(*rep,0,strlen(*rep));
@@ -1025,9 +1023,7 @@ The entities node will be disincluded when set to false.
 Example Values: false
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1127,9 +1123,7 @@ When set to false, the timeline will strip any native retweets (though they will
 Example Values: false
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1221,9 +1215,7 @@ The entities node will be disincluded when set to false.
 Example Values: false
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1301,9 +1293,7 @@ The user entities node will be disincluded when set to false.
 Example Values: false
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1360,9 +1350,7 @@ When set to either true, t or 1, each tweet returned in a timeline will include 
 Example Values: true
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1431,9 +1419,7 @@ The entities node will be disincluded when set to false.
 Example Values: false
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1485,9 +1471,7 @@ When set to either true, t or 1, each tweet returned in a timeline will include 
 Example Values: true
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1578,9 +1562,7 @@ Example Values: true
 
 */
 
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1637,9 +1619,7 @@ When set to either true, t or 1, each tweet returned in a timeline will include 
 Example Values: true
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1757,9 +1737,7 @@ Language code for the rendered embed. This will affect the text and localization
 Example Values: fr
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1827,9 +1805,7 @@ Many programming environments will not consume our ids due to their size. Provid
 Example Values: true
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1947,9 +1923,7 @@ If supplied, the response will use the JSONP format with a callback of the given
 Example Values: processTweets
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2032,9 +2006,7 @@ skip_status optional
 When set to either true, t or 1 statuses will not be included in the returned user objects.
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2102,9 +2074,7 @@ The entities node will not be included when set to false.
 Example Values: false
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2144,9 +2114,7 @@ The ID of the direct message.
 Example Values: 587424932
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2189,9 +2157,7 @@ The entities node will not be included when set to false.
 Example Values: false
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2244,9 +2210,7 @@ The text of your direct message. Be sure to URL encode as necessary, and keep th
 Example Values: Meet me behind the cafeteria after school
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2289,9 +2253,7 @@ Many programming environments will not consume our ids due to their size. Provid
 Example Values: true
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2360,9 +2322,7 @@ Specifies the number of IDs attempt retrieval of, up to a maximum of 5,000 per d
 Example Values: 2048
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2442,9 +2402,7 @@ Specifies the number of IDs attempt retrieval of, up to a maximum of 5,000 per d
 Example Values: 2048
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2497,9 +2455,7 @@ A comma separated list of user IDs, up to 100 are allowed in a single request.
 Example Values: 783214,6253282
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2546,9 +2502,7 @@ Many programming environments will not consume our Tweet ids due to their size. 
 Example Values: true
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2594,9 +2548,7 @@ Many programming environments will not consume our Tweet ids due to their size. 
 Example Values: true
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2650,9 +2602,7 @@ Enable notifications for the target user.
 Example Values: true
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2704,9 +2654,7 @@ The ID of the user for whom to unfollow.
 
 Example Values: 12345
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2772,9 +2720,7 @@ Enable/disable retweets from the target user.
 Example Values: true, false
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2842,9 +2788,7 @@ The screen_name of the target user.
 Example Values: noradio
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2929,9 +2873,7 @@ The user object entities node will be disincluded when set to false.
 Example Values: false
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3017,9 +2959,7 @@ The user object entities node will be disincluded when set to false.
 Example Values: false
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3058,9 +2998,7 @@ Resource URL
 https://api.twitter.com/1.1/account/settings.json
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3102,9 +3040,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 Example Values: true
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3180,9 +3116,7 @@ The language which Twitter should render in for this user. The language must be 
 Example Values: it, en, es
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3230,9 +3164,7 @@ When set to either true, t or 1, each tweet will include a node called "entities
 Example Values: true
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3304,9 +3236,7 @@ skip_status optional
 
 When set to either true, t or 1 statuses will not be included in the returned user objects.
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3389,9 +3319,7 @@ skip_status optional
 When set to either true, t or 1 statuses will not be included in the returned user objects.
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3449,9 +3377,7 @@ The response from the API will include a previous_cursor and next_cursor to allo
 Example Values: 12893764510938
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3498,9 +3424,7 @@ The response from the API will include a previous_cursor and next_cursor to allo
 Example Values: 12893764510938
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3555,9 +3479,7 @@ skip_status optional
 When set to either true, t or 1 statuses will not be included in the returned user objects.
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3618,9 +3540,7 @@ skip_status optional
 When set to either true, t or 1 statuses will not be included in the returned user objects.
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3673,9 +3593,7 @@ The entities node that may appear within embedded statuses will be disincluded w
 Example Values: false
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3728,9 +3646,7 @@ The entities node will be disincluded when set to false.
 Example Values: false
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3789,9 +3705,7 @@ The entities node will be disincluded from embedded tweet objects when set to fa
 Example Values: false
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3844,9 +3758,7 @@ skip_status optional
 When set to either true, t or 1 statuses will not be included in the returned user objects.
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3903,9 +3815,7 @@ skip_status optional
 When set to either true, t or 1 statuses will not be included in the returned user objects.
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3936,9 +3846,7 @@ int post_account_remove_profile_banner (
 Resource URL
 https://api.twitter.com/1.1/account/remove_profile_banner.json
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3986,9 +3894,7 @@ The screen name of the user for whom to return results for. Helpful for disambig
 Example Values: noradio
 
 */
-	#ifdef DEBUG
-	puts(__func__);
-	#endif
+	dbg_printf("");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
