@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "utils.h"
 
@@ -44,6 +45,9 @@ char **alloc_strcat(char **dest, char const *src) {
 	*dest = (char*)nc_realloc(*dest, (destlen + srclen + 1)*sizeof(char));
 	if (wasdestnull) {
 		memset(*dest, 0, strlen(src) + 1);
+	}
+	if (abs((intptr_t)*dest - (intptr_t)src) < strlen(*dest) + 1) {
+		dbg_printf("warning: strncat takes restrict-qualified pointer, but two pointers may be same. it causes undefined behavior.\n%p and %p\n", *dest, src);
 	}
 	strncat(*dest, src, strlen(src));
 	return dest;
