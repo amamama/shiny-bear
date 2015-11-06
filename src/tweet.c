@@ -1062,11 +1062,11 @@ Example Values: false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_count(api, &uri, count);
-	add_max_and_since(api, &uri, max_and_since);
-	add_trim_user(api, &uri, trim_user);
-	add_contributor_details(api, &uri, contributor_details);
-	add_include_entities(api, &uri, include_entities);
+	add_args(count);
+	add_args(max_and_since);
+	add_args(trim_user);
+	add_args(contributor_details);
+	add_args(include_entities);
 	add_include_rts(api, &uri, include_rts, count);
 
 	int ret = http_request(uri, GET, res);
@@ -1164,12 +1164,12 @@ Example Values: false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_twitter_id(api, &uri, twitter_id);
-	add_count(api, &uri, count);
-	add_max_and_since(api, &uri, max_and_since);
-	add_trim_user(api, &uri, trim_user);
-	add_exclude_replies(api, &uri, exclude_replies);
-	add_contributor_details(api, &uri, contributor_details);
+	add_args(twitter_id);
+	add_args(count);
+	add_args(max_and_since);
+	add_args(trim_user);
+	add_args(exclude_replies);
+	add_args(contributor_details);
 	add_include_rts(api, &uri, include_rts, count);
 
 	int ret = http_request(uri, GET, res);
@@ -1248,12 +1248,12 @@ Example Values: false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_count(api, &uri, count);
-	add_max_and_since(api, &uri, max_and_since);
-	add_trim_user(api, &uri, trim_user);
-	add_exclude_replies(api, &uri, exclude_replies);
-	add_contributor_details(api, &uri, contributor_details);
-	add_include_entities(api, &uri, include_entities);
+	add_args(count);
+	add_args(max_and_since);
+	add_args(trim_user);
+	add_args(exclude_replies);
+	add_args(contributor_details);
+	add_args(include_entities);
 
 	int ret = http_request(uri, GET, res);
 
@@ -1324,11 +1324,11 @@ Example Values: false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_count(api, &uri, count);
-	add_max_and_since(api, &uri, max_and_since);
-	add_trim_user(api, &uri, trim_user);
-	add_include_entities(api, &uri, include_entities);
-	add_include_user_entities(api, &uri, include_user_entities);
+	add_args(count);
+	add_args(max_and_since);
+	add_args(trim_user);
+	add_args(include_entities);
+	add_args(include_user_entities);
 
 	int ret = http_request(uri, GET, res);
 
@@ -1388,8 +1388,8 @@ Example Values: true
 	alloc_strcat(&uri, i);
 
 	count%=101;
-	add_count(api, &uri, count);
-	add_trim_user(api, &uri, trim_user);
+	add_args(count);
+	add_args(trim_user);
 
 	int ret = http_request(uri, GET, res);
 
@@ -1452,10 +1452,10 @@ Example Values: false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_id(api, &uri, id);
-	add_trim_user(api, &uri, trim_user);
-	add_include_my_retweet(api, &uri, include_my_retweet);
-	add_include_entities(api, &uri, include_entities);
+	add_args(id);
+	add_args(trim_user);
+	add_args(include_my_retweet);
+	add_args(include_entities);
 
 	int ret = http_request(uri, GET, res);
 
@@ -1507,7 +1507,7 @@ Example Values: true
 	snprintf(i, sizeof(i), "%" PRId64 ".json", id);
 	alloc_strcat(&uri, i);
 
-	add_trim_user(api, &uri, trim_user);
+	add_args(trim_user);
 
 
 	int ret = http_request(uri, POST, res);
@@ -1595,14 +1595,14 @@ Example Values: true
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_status(api, &uri, status);
-	add_in_reply_to_status_id(api, &uri, in_reply_to_status_id);
+	add_args(status);
+	add_args(in_reply_to_status_id);
 	if (do_add_l_l) {
 		add_coods(api, &uri, l_l);
 	}
-	add_place_id(api, &uri, place_id);
-	add_display_coordinates(api, &uri, display_coordinates);
-	add_trim_user(api, &uri, trim_user);
+	add_args(place_id);
+	add_args(display_coordinates);
+	add_args(trim_user);
 
 
 	int ret = http_request(uri, POST, res);
@@ -1655,7 +1655,7 @@ Example Values: true
 	snprintf(i, sizeof(i), "%" PRId64 ".json", id);
 	alloc_strcat(&uri, i);
 
-	add_trim_user(api, &uri, trim_user);
+	add_args(trim_user);
 
 
 	int ret = http_request(uri, POST, res);
@@ -1770,15 +1770,15 @@ Example Values: fr
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_id(api, &uri, id);
-	add_url(api, &uri, url);
-	add_maxwidth(api, &uri, maxwidth);
-	add_hide_media(api, &uri, hide_media);
-	add_hide_thread(api, &uri, hide_thread);
-	add_omit_script(api, &uri, omit_script);
-	add_align(api, &uri, align);
-	add_related(api, &uri, related);
-	add_lang(api, &uri, lang);
+	add_args(id);
+	add_args(url);
+	add_args(maxwidth);
+	add_args(hide_media);
+	add_args(hide_thread);
+	add_args(omit_script);
+	add_args(align);
+	add_args(related);
+	add_args(lang);
 
 	int ret = http_request(uri, GET, res);
 
@@ -1838,9 +1838,9 @@ Example Values: true
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_id(api, &uri, id);
-	add_cursor(api, &uri, cursor);
-	add_stringify_ids(api, &uri, stringify_ids);
+	add_args(id);
+	add_args(cursor);
+	add_args(stringify_ids);
 
 
 	int ret = http_request(uri, GET, res);
@@ -1959,16 +1959,16 @@ Example Values: processTweets
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_q(api, &uri, q);
-	add_geocode(api, &uri, geocode);
-	add_lang(api, &uri, lang);
-	add_locale(api, &uri, locale);
-	add_result_type(api, &uri, result_type);
-	add_count(api, &uri, count);
-	add_until(api, &uri, until);
-	add_max_and_since(api, &uri, max_and_since);
-	add_include_entities(api, &uri, include_entities);
-	add_callback(api, &uri, callback);
+	add_args(q);
+	add_args(geocode);
+	add_args(lang);
+	add_args(locale);
+	add_args(result_type);
+	add_args(count);
+	add_args(until);
+	add_args(max_and_since);
+	add_args(include_entities);
+	add_args(callback);
 
 
 	int ret = http_request(uri, GET, res);
@@ -2031,10 +2031,10 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_count(api, &uri, count);
-	add_max_and_since(api, &uri, max_and_since);
-	add_include_entities(api, &uri, include_entities);
-	add_skip_status(api, &uri, skip_status);
+	add_args(count);
+	add_args(max_and_since);
+	add_args(include_entities);
+	add_args(skip_status);
 
 	int ret = http_request(uri, GET, res);
 
@@ -2097,10 +2097,10 @@ Example Values: false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_count(api, &uri, count);
-	add_max_and_since(api, &uri, max_and_since);
+	add_args(count);
+	add_args(max_and_since);
 	add_pages(api, &uri,pages);
-	add_include_entities(api, &uri, include_entities);
+	add_args(include_entities);
 
 	int ret = http_request(uri, GET, res);
 
@@ -2136,7 +2136,7 @@ Example Values: 587424932
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_id(api, &uri, id);
+	add_args(id);
 
 	int ret = http_request(uri, GET, res);
 
@@ -2179,8 +2179,8 @@ Example Values: false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_id(api, &uri, id);
-	add_include_entities(api, &uri, include_entities);
+	add_args(id);
+	add_args(include_entities);
 
 	int ret = http_request(uri, POST, res);
 
@@ -2236,8 +2236,8 @@ Example Values: Meet me behind the cafeteria after school
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_twitter_id(api, &uri, twitter_id);
-	add_text(api, &uri, text);
+	add_args(twitter_id);
+	add_args(text);
 
 	int ret = http_request(uri, POST, res);
 
@@ -2273,7 +2273,7 @@ Example Values: true
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_stringify_ids(api, &uri, stringify_ids);
+	add_args(stringify_ids);
 
 	int ret = http_request(uri, GET, res);
 
@@ -2346,9 +2346,9 @@ Example Values: 2048
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_twitter_id(api, &uri, twitter_id);
-	add_cursor(api, &uri, cursor);
-	add_stringify_ids(api, &uri, stringify_ids);
+	add_args(twitter_id);
+	add_args(cursor);
+	add_args(stringify_ids);
 	add_count_upto_5000(api, &uri, count);
 
 	int ret = http_request(uri, GET, res);
@@ -2424,9 +2424,9 @@ Example Values: 2048
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_twitter_id(api, &uri, twitter_id);
-	add_cursor(api, &uri, cursor);
-	add_stringify_ids(api, &uri, stringify_ids);
+	add_args(twitter_id);
+	add_args(cursor);
+	add_args(stringify_ids);
 	add_count_upto_5000(api, &uri, count);
 
 	int ret = http_request(uri, GET, res);
@@ -2471,7 +2471,7 @@ Example Values: 783214,6253282
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_screen_name(api, &uri, screen_name);
+	add_args(screen_name);
 	add_user_id_str(api, &uri, user_id);
 
 	int ret = http_request(uri, GET, res);
@@ -2518,8 +2518,8 @@ Example Values: true
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_cursor(api, &uri, cursor);
-	add_stringify_ids(api, &uri, stringify_ids);
+	add_args(cursor);
+	add_args(stringify_ids);
 
 	int ret = http_request(uri, GET, res);
 
@@ -2564,8 +2564,8 @@ Example Values: true
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_cursor(api, &uri, cursor);
-	add_stringify_ids(api, &uri, stringify_ids);
+	add_args(cursor);
+	add_args(stringify_ids);
 
 	int ret = http_request(uri, GET, res);
 
@@ -2622,8 +2622,8 @@ Example Values: true
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_twitter_id(api, &uri, twitter_id);
-	add_follow(api, &uri, follow);
+	add_args(twitter_id);
+	add_args(follow);
 
 	int ret = http_request(uri, POST, res);
 
@@ -2672,7 +2672,7 @@ Example Values: 12345
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_twitter_id(api, &uri, twitter_id);
+	add_args(twitter_id);
 
 	int ret = http_request(uri, POST, res);
 
@@ -2736,9 +2736,9 @@ Example Values: true, false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_twitter_id(api, &uri, twitter_id);
-	add_device(api, &uri, device);
-	add_retweets(api, &uri, retweets);
+	add_args(twitter_id);
+	add_args(device);
+	add_args(retweets);
 
 	int ret = http_request(uri, POST, res);
 
@@ -2801,8 +2801,8 @@ Example Values: noradio
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_source(api, &uri, source);
-	add_target(api, &uri, target);
+	add_args(source);
+	add_args(target);
 
 	int ret = http_request(uri, GET, res);
 
@@ -2883,11 +2883,11 @@ Example Values: false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_twitter_id(api, &uri, twitter_id);
-	add_cursor(api, &uri, cursor);
-	add_count(api, &uri, count);
-	add_skip_status(api, &uri, skip_status);
-	add_include_user_entities(api, &uri, include_user_entities);
+	add_args(twitter_id);
+	add_args(cursor);
+	add_args(count);
+	add_args(skip_status);
+	add_args(include_user_entities);
 
 	int ret = http_request(uri, GET, res);
 
@@ -2967,11 +2967,11 @@ Example Values: false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_twitter_id(api, &uri, twitter_id);
-	add_cursor(api, &uri, cursor);
-	add_count(api, &uri, count);
-	add_skip_status(api, &uri, skip_status);
-	add_include_user_entities(api, &uri, include_user_entities);
+	add_args(twitter_id);
+	add_args(cursor);
+	add_args(count);
+	add_args(skip_status);
+	add_args(include_user_entities);
 
 	int ret = http_request(uri, GET, res);
 
@@ -3042,8 +3042,8 @@ Example Values: true
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_include_entities(api, &uri, include_entities);
-	add_skip_status(api, &uri, skip_status);
+	add_args(include_entities);
+	add_args(skip_status);
 
 	int ret = http_request(uri, GET, res);
 
@@ -3118,12 +3118,12 @@ Example Values: it, en, es
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_trend_location_woeid(api, &uri, trend_location_woeid);
-	add_sleep_time_enabled(api, &uri, sleep_time_enabled);
-	add_start_sleep_time(api, &uri, start_sleep_time);
-	add_end_sleep_time(api, &uri, end_sleep_time);
-	add_time_zone(api, &uri, time_zone);
-	add_lang(api, &uri, lang);
+	add_args(trend_location_woeid);
+	add_args(sleep_time_enabled);
+	add_args(start_sleep_time);
+	add_args(end_sleep_time);
+	add_args(time_zone);
+	add_args(lang);
 
 	int ret = http_request(uri, POST, res);
 
@@ -3167,7 +3167,7 @@ Example Values: true
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_device_str(api, &uri, device);
-	add_include_entities(api, &uri, include_entities);
+	add_args(include_entities);
 
 	int ret = http_request(uri, POST, res);
 
@@ -3238,12 +3238,12 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_name(api, &uri, name);
+	add_args(name);
 	add_url_upto_100(api, &uri, url);
-	add_location(api, &uri, location);
-	add_description(api, &uri, description);
-	add_include_entities(api, &uri, include_entities);
-	add_skip_status(api, &uri, skip_status);
+	add_args(location);
+	add_args(description);
+	add_args(include_entities);
+	add_args(skip_status);
 
 	int ret = http_request(uri, POST, res);
 
@@ -3321,13 +3321,13 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_profile_background_color(api, &uri, profile_background_color);
-	add_profile_link_color(api, &uri, profile_link_color);
-	add_profile_sidebar_border_color(api, &uri, profile_sidebar_border_color);
-	add_profile_sidebar_fill_color(api, &uri, profile_sidebar_fill_color);
-	add_profile_text_color(api, &uri, profile_text_color);
-	add_include_entities(api, &uri, include_entities);
-	add_skip_status(api, &uri, skip_status);
+	add_args(profile_background_color);
+	add_args(profile_link_color);
+	add_args(profile_sidebar_border_color);
+	add_args(profile_sidebar_fill_color);
+	add_args(profile_text_color);
+	add_args(include_entities);
+	add_args(skip_status);
 
 	int ret = http_request(uri, POST, res);
 
@@ -3379,9 +3379,9 @@ Example Values: 12893764510938
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_include_entities(api, &uri, include_entities);
-	add_skip_status(api, &uri, skip_status);
-	add_cursor(api, &uri, cursor);
+	add_args(include_entities);
+	add_args(skip_status);
+	add_args(cursor);
 
 	int ret = http_request(uri, GET, res);
 
@@ -3426,8 +3426,8 @@ Example Values: 12893764510938
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_stringify_ids(api, &uri, stringify_ids);
-	add_cursor(api, &uri, cursor);
+	add_args(stringify_ids);
+	add_args(cursor);
 
 	int ret = http_request(uri, GET, res);
 
@@ -3485,9 +3485,9 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_twitter_id(api, &uri, twitter_id);
-	add_include_entities(api, &uri, include_entities);
-	add_skip_status(api, &uri, skip_status);
+	add_args(twitter_id);
+	add_args(include_entities);
+	add_args(skip_status);
 
 	int ret = http_request(uri, POST, res);
 
@@ -3549,9 +3549,9 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_twitter_id(api, &uri, twitter_id);
-	add_include_entities(api, &uri, include_entities);
-	add_skip_status(api, &uri, skip_status);
+	add_args(twitter_id);
+	add_args(include_entities);
+	add_args(skip_status);
 
 	int ret = http_request(uri, POST, res);
 
@@ -3601,9 +3601,9 @@ Example Values: false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_screen_name(api, &uri, screen_name);
+	add_args(screen_name);
 	add_user_id_str(api, &uri, user_id);
-	add_include_entities(api, &uri, include_entities);
+	add_args(include_entities);
 
 	int ret = http_request(uri, GET, res);
 
@@ -3658,8 +3658,8 @@ Example Values: false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_twitter_id(api, &uri, twitter_id);
-	add_include_entities(api, &uri, include_entities);
+	add_args(twitter_id);
+	add_args(include_entities);
 
 	int ret = http_request(uri, GET, res);
 
@@ -3716,10 +3716,10 @@ Example Values: false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_q(api, &uri, q);
-	add_page(api, &uri, page);
+	add_args(q);
+	add_args(page);
 	add_count_upto_20(api, &uri, count);
-	add_include_entities(api, &uri, include_entities);
+	add_args(include_entities);
 
 	int ret = http_request(uri, GET, res);
 
@@ -3773,9 +3773,9 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_twitter_id(api, &uri, twitter_id);
-	add_include_entities(api, &uri, include_entities);
-	add_skip_status(api, &uri, skip_status);
+	add_args(twitter_id);
+	add_args(include_entities);
+	add_args(skip_status);
 
 	int ret = http_request(uri, GET, res);
 
@@ -3833,9 +3833,9 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_twitter_id(api, &uri, twitter_id);
-	add_include_entities(api, &uri, include_entities);
-	add_skip_status(api, &uri, skip_status);
+	add_args(twitter_id);
+	add_args(include_entities);
+	add_args(skip_status);
 
 	int ret = http_request(uri, GET, res);
 
@@ -3915,7 +3915,7 @@ Example Values: noradio
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_twitter_id(api, &uri, twitter_id);
+	add_args(twitter_id);
 
 	int ret = http_request(uri, POST, res);
 
