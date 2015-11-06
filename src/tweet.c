@@ -39,16 +39,15 @@ int bear_cleanup(void) {
 
 static size_t write_data(char *buffer, size_t size, size_t nmemb, void *rep) {
 	*(buffer + size * nmemb) = '\0';
-		alloc_strcat((char**)rep, buffer);
-
+	alloc_strcat((char**)rep, buffer);
 	return size * nmemb;
 }
 
 static int http_request(char const *u, int p, char **rep) {
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (rep && *rep) {
-		memset(*rep,0,strlen(*rep));
+		memset(*rep, 0, strlen(*rep));
 	}
 	CURL *curl = curl_easy_init();
 	CURLcode ret;
@@ -59,19 +58,19 @@ static int http_request(char const *u, int p, char **rep) {
 	char *post = NULL;
 		request = oauth_sign_url2(u, p?&post:NULL, OA_HMAC, NULL, user_keys.c_key, user_keys.c_sec, user_keys.t_key, user_keys.t_sec);
 	if (p) {
-		curl_easy_setopt (curl, CURLOPT_POSTFIELDS, (void *) post);
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, (void *) post);
 	}
-	curl_easy_setopt (curl, CURLOPT_URL, request);
+	curl_easy_setopt(curl, CURLOPT_URL, request);
 	//is it good? i dont know.
-	curl_easy_setopt (curl, CURLOPT_SSL_VERIFYPEER, 0L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
 	if (rep) {
-		curl_easy_setopt (curl, CURLOPT_WRITEDATA, (void *) rep);
-		curl_easy_setopt (curl, CURLOPT_WRITEFUNCTION, write_data);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) rep);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
 	}
 
 	ret = curl_easy_perform (curl);
 	if (ret != CURLE_OK) {
-		fprintf (stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror (ret));
+		fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror (ret));
 	}
 	free_and_assign(request);
 	free_and_assign(post);
@@ -83,7 +82,7 @@ static int http_request(char const *u, int p, char **rep) {
 char const *api_uri_1_1 = "https://api.twitter.com/1.1/";
 
 char const * api_uri[] = {
-	#define uri(const, str) [const] = #str,
+	#define uri(cst, str) [cst] = #str,
 	#include "api_uri.h"
 	#undef uri
 };
@@ -115,7 +114,7 @@ add_args(tweet_id_t, id) {
 	char i[32] = {0};
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "id=");
-	snprintf(i, sizeof(i), "%llu", id);
+	snprintf(i, sizeof(i), "%" PRId64, id);
 	alloc_strcat(uri, i);
 
 	return uri;
@@ -128,7 +127,7 @@ add_args(tweet_id_t, since_id) {
 	char id[32] = {0};
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "since_id=");
-	snprintf(id, sizeof(id), "%llu", since_id);
+	snprintf(id, sizeof(id), "%" PRId64, since_id);
 	alloc_strcat(uri, id);
 
 	return uri;
@@ -141,9 +140,15 @@ add_args(tweet_id_t, max_id) {
 	char id[32] = {0};
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "max_id=");
-	snprintf(id, sizeof(id), "%llu", max_id);
+	snprintf(id, sizeof(id), "%" PRId64, max_id);
 	alloc_strcat(uri, id);
 
+	return uri;
+}
+
+add_args(max_and_since, max_and_since) {
+	add_max_id(api, uri, max_and_since.max_id);
+	add_since_id(api, uri, max_and_since.since_id);
 	return uri;
 }
 
@@ -199,20 +204,20 @@ static char **add_include_rts(api_enum api, char **uri, int include_rts, int cou
 	return uri;
 }
 
-add_args(tweet_id_t, user_id) {
+add_args(user_id_t, user_id) {
 	if (!user_id) {
 		return uri;
 	}
 	char id[32] = {0};
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "user_id=");
-	snprintf(id, sizeof(id), "%llu", user_id);
+	snprintf(id, sizeof(id), "%ld", user_id);
 	alloc_strcat(uri, id);
 
 	return uri;
 }
 
-add_args(char *, screen_name) {
+add_args(char const *, screen_name) {
 	if (!(screen_name && *screen_name)) {
 		return uri;
 	}
@@ -220,6 +225,12 @@ add_args(char *, screen_name) {
 	alloc_strcat(uri, "screen_name=");
 	alloc_strcat(uri, screen_name);
 
+	return uri;
+}
+
+add_args(twitter_id, twitter_id) {
+	add_user_id(api, uri, twitter_id.user_id);
+	add_screen_name(api, uri, twitter_id.screen_name);
 	return uri;
 }
 
@@ -262,7 +273,7 @@ add_args(int, include_my_retweet) {
 	return uri;
 }
 
-add_args(char *, status) {
+add_args(char const *, status) {
 	if (!(status && *status)) {
 		return uri;
 	}
@@ -288,7 +299,7 @@ add_args(tweet_id_t, in_reply_to_status_id) {
 	char id[32] = {0};
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "in_reply_to_status_id=");
-	snprintf(id, sizeof(id), "%llu", in_reply_to_status_id);
+	snprintf(id, sizeof(id), "%" PRId64, in_reply_to_status_id);
 	alloc_strcat(uri, id);
 
 	return uri;
@@ -312,15 +323,13 @@ add_args(geocode, coods) {
 	return uri;
 }
 
-add_args(tweet_id_t, place_id) {
-	if (!place_id) {
+add_args(char const *, place_id) {
+	if (!(place_id && *place_id)) {
 		return uri;
 	}
-	char id[32] = {0};
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "place_id=");
-	snprintf(id, sizeof(id), "%llx", place_id);
-	alloc_strcat(uri, id);
+	alloc_strcat(uri, place_id);
 
 	return uri;
 }
@@ -338,7 +347,7 @@ add_args(int, display_coordinates) {
 	return uri;
 }
 
-add_args(char *, url) {
+add_args(char const *, url) {
 	if (!(url && *url)) {
 		return uri;
 	}
@@ -415,7 +424,7 @@ add_args(int, align) {
 	return uri;
 }
 
-add_args(char *, related) {
+add_args(char const *, related) {
 	if (!(related && *related)) {
 		return uri;
 	}
@@ -426,7 +435,7 @@ add_args(char *, related) {
 	return uri;
 }
 
-add_args(char *, lang) {
+add_args(char const *, lang) {
 	if (!(lang && *lang)) {
 		return uri;
 	}
@@ -444,7 +453,7 @@ add_args(cursor_t, cursor) {
 	char cur[32] = {0};
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "cursor=");
-	snprintf(cur, sizeof(cur), "%lld", cursor);
+	snprintf(cur, sizeof(cur), "%" PRId64, cursor);
 	alloc_strcat(uri, cur);
 
 	return uri;
@@ -463,7 +472,7 @@ add_args(int, stringify_ids) {
 	return uri;
 }
 
-add_args(char *, q) {
+add_args(char const *, q) {
 	if(!(q && *q)) {
 		return uri;
 	}
@@ -496,7 +505,7 @@ add_args(geocode, geocode) {
 	return uri;
 }
 
-add_args(char *, locale) {
+add_args(char const *, locale) {
 	if (!(locale && *locale)) {
 		return uri;
 	}
@@ -532,7 +541,7 @@ add_args(int, result_type) {
 	return uri;
 }
 
-add_args(char *, until) {
+add_args(char const *, until) {
 	if (!(until && *until)) {
 		return uri;
 	}
@@ -543,7 +552,7 @@ add_args(char *, until) {
 	return uri;
 }
 
-add_args(char *, callback) {
+add_args(char const *, callback) {
 	if (!(callback && *callback)) {
 		return uri;
 	}
@@ -580,7 +589,7 @@ add_args(int, pages) {
 	return uri;
 }
 
-add_args(char *, text) {
+add_args(char const *, text) {
 	if (!(text && *text)) {
 		return uri;
 	}
@@ -606,7 +615,7 @@ add_args(int, count_upto_5000) {
 	return uri;
 }
 
-add_args(char *, user_id_str) {
+add_args(char const *, user_id_str) {
 	if (!(user_id_str && *user_id_str)) {
 		return uri;
 	}
@@ -656,20 +665,20 @@ add_args(int, retweets) {
 	return uri;
 }
 
-add_args(tweet_id_t, source_id) {
+add_args(user_id_t, source_id) {
 	if (!source_id) {
 		return uri;
 	}
 	char id[32] = {0};
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "source_id=");
-	snprintf(id, sizeof(id), "%llu", source_id);
+	snprintf(id, sizeof(id), "%" PRId64, source_id);
 	alloc_strcat(uri, id);
 
 	return uri;
 }
 
-add_args(char *, source_screen_name) {
+add_args(char const *, source_screen_name) {
 	if (!(source_screen_name && *source_screen_name)) {
 		return uri;
 	}
@@ -680,20 +689,26 @@ add_args(char *, source_screen_name) {
 	return uri;
 }
 
-add_args(tweet_id_t, target_id) {
+add_args(twitter_id, source) {
+	add_source_id(api, uri, source.user_id);
+	add_source_screen_name(api, uri, source.screen_name);
+	return uri;
+}
+
+add_args(user_id_t, target_id) {
 	if (!target_id) {
 		return uri;
 	}
 	char id[32] = {0};
 	add_que_or_amp(api, uri);
 	alloc_strcat(uri, "target_id=");
-	snprintf(id, sizeof(id), "%llu", target_id);
+	snprintf(id, sizeof(id), "%" PRId64, target_id);
 	alloc_strcat(uri, id);
 
 	return uri;
 }
 
-add_args(char *, target_screen_name) {
+add_args(char const *, target_screen_name) {
 	if (!(target_screen_name && *target_screen_name)) {
 		return uri;
 	}
@@ -701,6 +716,12 @@ add_args(char *, target_screen_name) {
 	alloc_strcat(uri, "target_screen_name=");
 	alloc_strcat(uri, target_screen_name);
 
+	return uri;
+}
+
+add_args(twitter_id, target) {
+	add_target_id(api, uri, target.user_id);
+	add_target_screen_name(api, uri, target.screen_name);
 	return uri;
 }
 
@@ -756,7 +777,7 @@ add_args(int, end_sleep_time) {
 	return uri;
 }
 
-add_args(char *, time_zone) {
+add_args(char const *, time_zone) {
 	if (!(time_zone && *time_zone)) {
 		return uri;
 	}
@@ -767,7 +788,7 @@ add_args(char *, time_zone) {
 	return uri;
 }
 
-add_args(char *, device_str) {
+add_args(char const *, device_str) {
 	if (!(device_str && *device_str)) {
 		return uri;
 	}
@@ -778,7 +799,7 @@ add_args(char *, device_str) {
 	return uri;
 }
 
-add_args(char *, name) {
+add_args(char const *, name) {
 	if (!(name && *name)) {
 		return uri;
 	}
@@ -797,7 +818,7 @@ add_args(char *, name) {
 	return uri;
 }
 
-add_args(char *, url_upto_100) {
+add_args(char const *, url_upto_100) {
 	if (!(url_upto_100 && *url_upto_100)) {
 		return uri;
 	}
@@ -816,7 +837,7 @@ add_args(char *, url_upto_100) {
 	return uri;
 }
 
-add_args(char *, location) {
+add_args(char const *, location) {
 	if (!(location && *location)) {
 		return uri;
 	}
@@ -835,7 +856,7 @@ add_args(char *, location) {
 	return uri;
 }
 
-add_args(char *, description) {
+add_args(char const *, description) {
 	if (!(description && *description)) {
 		return uri;
 	}
@@ -973,11 +994,17 @@ static char **add_stall_warnings (stream_enum stream, char **uri, int stall_warn
 }
 */
 
+/*--- REST API ---*/
+#define add_args(arg) add_##arg(api, &uri, arg)
+
+static inline bool is_valid_id(twitter_id id) {
+	return id.user_id || (id.screen_name && id.screen_name[0]);
+}
+
 int get_statuses_mentions_timeline (
 	char **res, //response
 	int count, //optional. if not 0, add it to argument.
-	tweet_id_t since_id, //optional. if not 0, add it to argument.
-	tweet_id_t max_id, //optional. if not 0, add it to argument.
+	max_and_since max_and_since, //optional. if not 0, add it to argument.
 	int trim_user, //optional. if not -1, add it to argument.
 	int contributor_details, //optional. if not -1, add it to argument.
 	int include_entities, //optional. if not -1, add it to argument.
@@ -1023,7 +1050,7 @@ The entities node will be disincluded when set to false.
 Example Values: false
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1036,8 +1063,7 @@ Example Values: false
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_count(api, &uri, count);
-	add_since_id(api, &uri, since_id);
-	add_max_id(api, &uri, max_id);
+	add_max_and_since(api, &uri, max_and_since);
 	add_trim_user(api, &uri, trim_user);
 	add_contributor_details(api, &uri, contributor_details);
 	add_include_entities(api, &uri, include_entities);
@@ -1052,11 +1078,9 @@ Example Values: false
 
 int get_statuses_user_timeline (
 	char **res, //response
-	tweet_id_t user_id, //Always specify either an user_id or screen_name when requesting a user timeline.
-	char *screen_name, //Always specify either an user_id or screen_name when requesting a user timeline.
+	twitter_id twitter_id, //Always specify either an user_id or screen_name when requesting a user timeline.
 	int count, //optional. if not 0, add it to argument.
-	tweet_id_t since_id, //optional. if not 0, add it to argument.
-	tweet_id_t max_id, //optional. if not 0, add it to argument.
+	max_and_since max_and_since, //optional. if not 0, add it to argument.
 	int trim_user, //optional. if not -1, add it to argument.
 	int exclude_replies, //optional. if not -1, add it to argument.
 	int contributor_details, //optional. if not -1, add it to argument.
@@ -1123,14 +1147,14 @@ When set to false, the timeline will strip any native retweets (though they will
 Example Values: false
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
 		return 0;
 	}
 
-	if (!(user_id || (screen_name && screen_name[0]))) {
+	if(!is_valid_id(twitter_id)) {
 		fprintf(stderr, "need user_id number or screen_name text\n");
 		return 0;
 	}
@@ -1140,11 +1164,9 @@ Example Values: false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_user_id(api, &uri, user_id);
-	add_screen_name(api, &uri, screen_name);
+	add_twitter_id(api, &uri, twitter_id);
 	add_count(api, &uri, count);
-	add_since_id(api, &uri, since_id);
-	add_max_id(api, &uri, max_id);
+	add_max_and_since(api, &uri, max_and_since);
 	add_trim_user(api, &uri, trim_user);
 	add_exclude_replies(api, &uri, exclude_replies);
 	add_contributor_details(api, &uri, contributor_details);
@@ -1160,8 +1182,7 @@ Example Values: false
 int get_statuses_home_timeline (
 	char **res, //response
 	int count, //optional. if not 0, add it to argument.
-	tweet_id_t since_id, //optional. if not 0, add it to argument.
-	tweet_id_t max_id, //optional. if not 0, add it to argument.
+	max_and_since max_and_since, //optional. if not 0, add it to argument.
 	int trim_user, //optional. if not -1, add it to argument.
 	int exclude_replies, //optional. if not -1, add it to argument.
 	int contributor_details, //optional. if not -1, add it to argument.
@@ -1215,7 +1236,7 @@ The entities node will be disincluded when set to false.
 Example Values: false
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1228,8 +1249,7 @@ Example Values: false
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_count(api, &uri, count);
-	add_since_id(api, &uri, since_id);
-	add_max_id(api, &uri, max_id);
+	add_max_and_since(api, &uri, max_and_since);
 	add_trim_user(api, &uri, trim_user);
 	add_exclude_replies(api, &uri, exclude_replies);
 	add_contributor_details(api, &uri, contributor_details);
@@ -1245,8 +1265,7 @@ Example Values: false
 int get_statuses_retweets_of_me (
 	char **res, //response
 	int count, //optional. if not 0, add it to argument.
-	tweet_id_t since_id, //optional. if not 0, add it to argument.
-	tweet_id_t max_id, //optional. if not 0, add it to argument.
+	max_and_since max_and_since, //optional. if not 0, add it to argument.
 	int trim_user, //optional. if not -1, add it to argument.
 	int include_entities, //optional. if not -1, add it to argument.
 	int include_user_entities //optional. if not -1, add it to argument,however, 1 is recommended.see below.
@@ -1293,7 +1312,7 @@ The user entities node will be disincluded when set to false.
 Example Values: false
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1306,12 +1325,10 @@ Example Values: false
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_count(api, &uri, count);
-	add_since_id(api, &uri, since_id);
-	add_max_id(api, &uri, max_id);
+	add_max_and_since(api, &uri, max_and_since);
 	add_trim_user(api, &uri, trim_user);
 	add_include_entities(api, &uri, include_entities);
 	add_include_user_entities(api, &uri, include_user_entities);
-
 
 	int ret = http_request(uri, GET, res);
 
@@ -1350,7 +1367,7 @@ When set to either true, t or 1, each tweet returned in a timeline will include 
 Example Values: true
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1367,13 +1384,12 @@ Example Values: true
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 	char i[32] = {0};
-	snprintf(i, sizeof(i), "%lld.json", id);
+	snprintf(i, sizeof(i), "%" PRId64 ".json", id);
 	alloc_strcat(&uri, i);
 
 	count%=101;
 	add_count(api, &uri, count);
 	add_trim_user(api, &uri, trim_user);
-
 
 	int ret = http_request(uri, GET, res);
 
@@ -1419,7 +1435,7 @@ The entities node will be disincluded when set to false.
 Example Values: false
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1471,7 +1487,7 @@ When set to either true, t or 1, each tweet returned in a timeline will include 
 Example Values: true
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1488,7 +1504,7 @@ Example Values: true
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 	char i[32] = {0};
-	snprintf(i, sizeof(i), "%lld.json", id);
+	snprintf(i, sizeof(i), "%" PRId64 ".json", id);
 	alloc_strcat(&uri, i);
 
 	add_trim_user(api, &uri, trim_user);
@@ -1507,7 +1523,7 @@ int post_statuses_update(
 	tweet_id_t in_reply_to_status_id, //optional. if not 0, add it to argument.
 	int do_add_l_l, //add it. whether add l_l to argument.
 	geocode l_l, //optional. if it is valid figure, add it to argument.
-	tweet_id_t place_id, //optional. if not 0, add it to argument.
+	char const *place_id, //optional. if not NULL, add it to argument.
 	int display_coordinates, //optional. if not -1, add it to argument.
 	int trim_user //optional. if not -1, add it to argument.
 	)
@@ -1562,7 +1578,7 @@ Example Values: true
 
 */
 
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1619,7 +1635,7 @@ When set to either true, t or 1, each tweet returned in a timeline will include 
 Example Values: true
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1636,7 +1652,7 @@ Example Values: true
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 	char i[32] = {0};
-	snprintf(i, sizeof(i), "%lld.json", id);
+	snprintf(i, sizeof(i), "%" PRId64 ".json", id);
 	alloc_strcat(&uri, i);
 
 	add_trim_user(api, &uri, trim_user);
@@ -1737,7 +1753,7 @@ Language code for the rendered embed. This will affect the text and localization
 Example Values: fr
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1805,7 +1821,7 @@ Many programming environments will not consume our ids due to their size. Provid
 Example Values: true
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1843,8 +1859,7 @@ int get_search_tweets (
 	int result_type, //optional. If not 0, add it to argument. 1 = "mixed",2="recent",4="popular"
 	int count, //optional. If not 0, add it to argument.
 	char *until, //optional. If not 0, add it to argument.
-	tweet_id_t since_id, //optional. If not 0, add it to argument.
-	tweet_id_t max_id, //optional. If not 0, add it to argument.
+	max_and_since max_and_since, //optional. if not 0, add it to argument.
 	int include_entities, //optional. If not -1, add it to argument.
 	char *callback //optional. If not 0, add it to argument.
 	) {
@@ -1923,7 +1938,7 @@ If supplied, the response will use the JSONP format with a callback of the given
 Example Values: processTweets
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -1951,8 +1966,7 @@ Example Values: processTweets
 	add_result_type(api, &uri, result_type);
 	add_count(api, &uri, count);
 	add_until(api, &uri, until);
-	add_since_id(api, &uri, since_id);
-	add_max_id(api, &uri, max_id);
+	add_max_and_since(api, &uri, max_and_since);
 	add_include_entities(api, &uri, include_entities);
 	add_callback(api, &uri, callback);
 
@@ -1967,8 +1981,7 @@ Example Values: processTweets
 int get_direct_messages (
 	char **res, //response
 	int count, //optional. if not 0, add it to argument.
-	tweet_id_t since_id, //optional. if not 0, add it to argument.
-	tweet_id_t max_id, //optional. if not 0, add it to argument.
+	max_and_since max_and_since, //optional. if not 0, add it to argument.
 	int include_entities, //optional. if not -1, add it to argument.
 	int skip_status //optional. if not -1, add it to argument,however, 1 is recommended.see below.
 	) {
@@ -2006,7 +2019,7 @@ skip_status optional
 When set to either true, t or 1 statuses will not be included in the returned user objects.
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2019,8 +2032,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_count(api, &uri, count);
-	add_since_id(api, &uri, since_id);
-	add_max_id(api, &uri, max_id);
+	add_max_and_since(api, &uri, max_and_since);
 	add_include_entities(api, &uri, include_entities);
 	add_skip_status(api, &uri, skip_status);
 
@@ -2034,8 +2046,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 int get_dm_sent (
 	char **res, //response
 	int count, //optional. if not 0, add it to argument.
-	tweet_id_t since_id, //optional. if not 0, add it to argument.
-	tweet_id_t max_id, //optional. if not 0, add it to argument.
+	max_and_since max_and_since, //optional. if not 0, add it to argument.
 	int pages, //optional. if not -1, add it to argument,however, 1 is recommended.see below.
 	int include_entities //optional. if not -1, add it to argument.
 	) {
@@ -2074,7 +2085,7 @@ The entities node will not be included when set to false.
 Example Values: false
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2087,8 +2098,7 @@ Example Values: false
 	alloc_strcat(&uri, api_uri[api]);
 
 	add_count(api, &uri, count);
-	add_since_id(api, &uri, since_id);
-	add_max_id(api, &uri, max_id);
+	add_max_and_since(api, &uri, max_and_since);
 	add_pages(api, &uri,pages);
 	add_include_entities(api, &uri, include_entities);
 
@@ -2114,7 +2124,7 @@ The ID of the direct message.
 Example Values: 587424932
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2157,7 +2167,7 @@ The entities node will not be included when set to false.
 Example Values: false
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2180,8 +2190,7 @@ Example Values: false
 }
 
 int post_dm_new (
-	tweet_id_t user_id, //One of user_id or screen_name are required.
-	char *screen_name, //One of user_id or screen_name are required.
+	twitter_id twitter_id, //Always specify either an user_id or screen_name when requesting a user timeline.
 	char *text, //required.
 	char **res //response
 	) {
@@ -2210,14 +2219,14 @@ The text of your direct message. Be sure to URL encode as necessary, and keep th
 Example Values: Meet me behind the cafeteria after school
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
 		return 0;
 	}
 
-	if (!(user_id || (screen_name && screen_name[0]))) {
+	if(!is_valid_id(twitter_id)) {
 		fprintf(stderr, "need user_id number or screen_name text\n");
 		return 0;
 	}
@@ -2227,8 +2236,7 @@ Example Values: Meet me behind the cafeteria after school
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_user_id(api, &uri, user_id);
-	add_screen_name(api, &uri, screen_name);
+	add_twitter_id(api, &uri, twitter_id);
 	add_text(api, &uri, text);
 
 	int ret = http_request(uri, POST, res);
@@ -2253,7 +2261,7 @@ Many programming environments will not consume our ids due to their size. Provid
 Example Values: true
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2276,8 +2284,7 @@ Example Values: true
 
 int get_friends_ids (
 	char **res, //response
-	tweet_id_t user_id, //optional. if not 0, add it to argument.
-	char *screen_name, //optional. if not 0, add it to argument.
+	twitter_id twitter_id, //Always specify either an user_id or screen_name when requesting a user timeline.
 	cursor_t cursor, //optional. if not 0, add it to argument.
 	int stringify_ids, //optional. if not -1, add it to argument.
 	int count //optional. if not 0, add it to argument.
@@ -2322,14 +2329,14 @@ Specifies the number of IDs attempt retrieval of, up to a maximum of 5,000 per d
 Example Values: 2048
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
 		return 0;
 	}
 
-	if (!(user_id || (screen_name && screen_name[0]))) {
+	if(!is_valid_id(twitter_id)) {
 		fprintf(stderr, "need user_id number or screen_name text\n");
 		return 0;
 	}
@@ -2339,8 +2346,7 @@ Example Values: 2048
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_user_id(api, &uri, user_id);
-	add_screen_name(api, &uri, screen_name);
+	add_twitter_id(api, &uri, twitter_id);
 	add_cursor(api, &uri, cursor);
 	add_stringify_ids(api, &uri, stringify_ids);
 	add_count_upto_5000(api, &uri, count);
@@ -2354,8 +2360,7 @@ Example Values: 2048
 
 int get_followers_ids (
 	char **res, //response
-	tweet_id_t user_id, //optional. if not 0, add it to argument.
-	char *screen_name, //optional. if not 0, add it to argument.
+	twitter_id twitter_id, //Always specify either an user_id or screen_name when requesting a user timeline.
 	cursor_t cursor, //optional. if not 0, add it to argument.
 	int stringify_ids, //optional. if not -1, add it to argument.
 	int count //optional. if not 0, add it to argument.
@@ -2402,14 +2407,14 @@ Specifies the number of IDs attempt retrieval of, up to a maximum of 5,000 per d
 Example Values: 2048
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
 		return 0;
 	}
 
-	if (!(user_id || (screen_name && screen_name[0]))) {
+	if(!is_valid_id(twitter_id)) {
 		fprintf(stderr, "need user_id number or screen_name text\n");
 		return 0;
 	}
@@ -2419,8 +2424,7 @@ Example Values: 2048
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_user_id(api, &uri, user_id);
-	add_screen_name(api, &uri, screen_name);
+	add_twitter_id(api, &uri, twitter_id);
 	add_cursor(api, &uri, cursor);
 	add_stringify_ids(api, &uri, stringify_ids);
 	add_count_upto_5000(api, &uri, count);
@@ -2455,7 +2459,7 @@ A comma separated list of user IDs, up to 100 are allowed in a single request.
 Example Values: 783214,6253282
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2502,7 +2506,7 @@ Many programming environments will not consume our Tweet ids due to their size. 
 Example Values: true
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2548,7 +2552,7 @@ Many programming environments will not consume our Tweet ids due to their size. 
 Example Values: true
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -2572,8 +2576,7 @@ Example Values: true
 
 int post_fs_create (
 	char **res, //response
-	tweet_id_t user_id, //optional. if not 0, add it to argument.
-	char *screen_name, //optional. if not 0, add it to argument.
+	twitter_id twitter_id, //Always specify either an user_id or screen_name when requesting a user timeline.
 	int follow //optional. if not -1, add it to argument.
 	) {
 /*
@@ -2602,14 +2605,14 @@ Enable notifications for the target user.
 Example Values: true
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
 		return 0;
 	}
 
-	if (!(user_id || (screen_name && screen_name[0]))) {
+	if(!is_valid_id(twitter_id)) {
 		fprintf(stderr, "need user_id number or screen_name text\n");
 		return 0;
 	}
@@ -2619,8 +2622,7 @@ Example Values: true
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_user_id(api, &uri, user_id);
-	add_screen_name(api, &uri, screen_name);
+	add_twitter_id(api, &uri, twitter_id);
 	add_follow(api, &uri, follow);
 
 	int ret = http_request(uri, POST, res);
@@ -2632,8 +2634,7 @@ Example Values: true
 
 int post_fs_destroy (
 	char **res, //response
-	tweet_id_t user_id, //optional. if not 0, add it to argument.
-	char *screen_name //optional. if not 0, add it to argument.
+	twitter_id twitter_id //Always specify either an user_id or screen_name when requesting a user timeline.
 	) {
 /*
 Resource URL
@@ -2654,14 +2655,14 @@ The ID of the user for whom to unfollow.
 
 Example Values: 12345
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
 		return 0;
 	}
 
-	if (!(user_id || (screen_name && screen_name[0]))) {
+	if(!is_valid_id(twitter_id)) {
 		fprintf(stderr, "need user_id number or screen_name text\n");
 		return 0;
 	}
@@ -2671,8 +2672,7 @@ Example Values: 12345
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_user_id(api, &uri, user_id);
-	add_screen_name(api, &uri, screen_name);
+	add_twitter_id(api, &uri, twitter_id);
 
 	int ret = http_request(uri, POST, res);
 
@@ -2683,8 +2683,7 @@ Example Values: 12345
 
 int post_fs_update (
 	char **res, //response
-	tweet_id_t user_id, //optional. if not 0, add it to argument.
-	char *screen_name, //optional. if not 0, add it to argument.
+	twitter_id twitter_id, //Always specify either an user_id or screen_name when requesting a user timeline.
 	int device, //optional. if not -1, add it to argument.
 	int retweets //optional. if not -1, add it to argument.
 	) {
@@ -2720,14 +2719,14 @@ Enable/disable retweets from the target user.
 Example Values: true, false
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
 		return 0;
 	}
 
-	if (!(user_id || (screen_name && screen_name[0]))) {
+	if(!is_valid_id(twitter_id)) {
 		fprintf(stderr, "need user_id number or screen_name text\n");
 		return 0;
 	}
@@ -2737,8 +2736,7 @@ Example Values: true, false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_user_id(api, &uri, user_id);
-	add_screen_name(api, &uri, screen_name);
+	add_twitter_id(api, &uri, twitter_id);
 	add_device(api, &uri, device);
 	add_retweets(api, &uri, retweets);
 
@@ -2751,10 +2749,8 @@ Example Values: true, false
 
 int get_fs_show (
 	char **res, //response
-	tweet_id_t source_id, //optional. if not 0, add it to argument.
-	char *source_screen_name, //optional. if not 0, add it to argument.
-	tweet_id_t target_id, //optional. if not 0, add it to argument.
-	char *target_screen_name //optional. if not 0, add it to argument.
+	twitter_id source, //Always specify either an user_id or screen_name when requesting a user timeline.
+	twitter_id target //Always specify either an user_id or screen_name when requesting a user timeline.
 	) {
 /*
 Resource URL
@@ -2788,14 +2784,14 @@ The screen_name of the target user.
 Example Values: noradio
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
 		return 0;
 	}
 
-	if (!(source_id || (source_screen_name && source_screen_name[0])) && !(target_id || (target_screen_name && target_screen_name[0]))) {
+	if (!(is_valid_id(source)) && !(is_valid_id(target))) {
 		fprintf(stderr, "At least one source and one target, whether specified by IDs or screen_names");
 		return 0;
 	}
@@ -2805,10 +2801,8 @@ Example Values: noradio
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_source_id(api, &uri, source_id);
-	add_source_screen_name(api, &uri, source_screen_name);
-	add_target_id(api, &uri, target_id);
-	add_target_screen_name(api, &uri, target_screen_name);
+	add_source(api, &uri, source);
+	add_target(api, &uri, target);
 
 	int ret = http_request(uri, GET, res);
 
@@ -2819,8 +2813,7 @@ Example Values: noradio
 
 int get_friends_list (
 	char **res, //response
-	tweet_id_t user_id, //optional. if not 0, add it to argument.
-	char *screen_name, //optional. if not 0, add it to argument.
+	twitter_id twitter_id, //Always specify either an user_id or screen_name when requesting a user timeline.
 	cursor_t cursor, //optional. if not 0, add it to argument.
 	int count, //optional. if not 0, add it to argument.
 	int skip_status, //optional. if not -1, add it to argument.
@@ -2873,14 +2866,14 @@ The user object entities node will be disincluded when set to false.
 Example Values: false
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
 		return 0;
 	}
 
-	if (!(user_id || (screen_name && screen_name[0]))) {
+	if(!is_valid_id(twitter_id)) {
 		fprintf(stderr, "need user_id number or screen_name text\n");
 		return 0;
 	}
@@ -2890,8 +2883,7 @@ Example Values: false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_user_id(api, &uri, user_id);
-	add_screen_name(api, &uri, screen_name);
+	add_twitter_id(api, &uri, twitter_id);
 	add_cursor(api, &uri, cursor);
 	add_count(api, &uri, count);
 	add_skip_status(api, &uri, skip_status);
@@ -2906,8 +2898,7 @@ Example Values: false
 
 int get_followers_list (
 	char **res, //response
-	tweet_id_t user_id, //optional. if not 0, add it to argument.
-	char *screen_name, //optional. if not 0, add it to argument.
+	twitter_id twitter_id, //Always specify either an user_id or screen_name when requesting a user timeline.
 	cursor_t cursor, //optional. if not 0, add it to argument.
 	int count, //optional. if not 0, add it to argument.
 	int skip_status, //optional. if not -1, add it to argument.
@@ -2959,14 +2950,14 @@ The user object entities node will be disincluded when set to false.
 Example Values: false
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
 		return 0;
 	}
 
-	if (!(user_id || (screen_name && screen_name[0]))) {
+	if(!is_valid_id(twitter_id)) {
 		fprintf(stderr, "need user_id number or screen_name text\n");
 		return 0;
 	}
@@ -2976,8 +2967,7 @@ Example Values: false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_user_id(api, &uri, user_id);
-	add_screen_name(api, &uri, screen_name);
+	add_twitter_id(api, &uri, twitter_id);
 	add_cursor(api, &uri, cursor);
 	add_count(api, &uri, count);
 	add_skip_status(api, &uri, skip_status);
@@ -2998,7 +2988,7 @@ Resource URL
 https://api.twitter.com/1.1/account/settings.json
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3040,7 +3030,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 Example Values: true
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3116,7 +3106,7 @@ The language which Twitter should render in for this user. The language must be 
 Example Values: it, en, es
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3164,7 +3154,7 @@ When set to either true, t or 1, each tweet will include a node called "entities
 Example Values: true
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3236,7 +3226,7 @@ skip_status optional
 
 When set to either true, t or 1 statuses will not be included in the returned user objects.
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3319,7 +3309,7 @@ skip_status optional
 When set to either true, t or 1 statuses will not be included in the returned user objects.
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3377,7 +3367,7 @@ The response from the API will include a previous_cursor and next_cursor to allo
 Example Values: 12893764510938
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3424,7 +3414,7 @@ The response from the API will include a previous_cursor and next_cursor to allo
 Example Values: 12893764510938
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3448,8 +3438,7 @@ Example Values: 12893764510938
 
 int post_blocks_create (
 	char **res, //response
-	char *screen_name, //optional. if not 0, add it to argument.
-	tweet_id_t user_id, //optional. if not 0, add it to argument.
+	twitter_id twitter_id, //Always specify either an user_id or screen_name when requesting a user timeline.
 	int include_entities, //optional. if not -1, add it to argument.
 	int skip_status //optional. if not -1, add it to argument.
 	) {
@@ -3479,10 +3468,15 @@ skip_status optional
 When set to either true, t or 1 statuses will not be included in the returned user objects.
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	if(!is_valid_id(twitter_id)) {
+		fprintf(stderr, "need user_id number or screen_name text\n");
 		return 0;
 	}
 
@@ -3491,8 +3485,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_screen_name(api, &uri, screen_name);
-	add_user_id(api, &uri, user_id);
+	add_twitter_id(api, &uri, twitter_id);
 	add_include_entities(api, &uri, include_entities);
 	add_skip_status(api, &uri, skip_status);
 
@@ -3505,8 +3498,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 
 int post_blocks_destroy (
 	char **res, //response
-	char *screen_name, //optional. if not 0, add it to argument.
-	tweet_id_t user_id, //optional. if not 0, add it to argument.
+	twitter_id twitter_id, //Always specify either an user_id or screen_name when requesting a user timeline.
 	int include_entities, //optional. if not -1, add it to argument.
 	int skip_status //optional. if not -1, add it to argument.
 	) {
@@ -3540,10 +3532,15 @@ skip_status optional
 When set to either true, t or 1 statuses will not be included in the returned user objects.
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	if(!is_valid_id(twitter_id)) {
+		fprintf(stderr, "need user_id number or screen_name text\n");
 		return 0;
 	}
 
@@ -3552,8 +3549,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_screen_name(api, &uri, screen_name);
-	add_user_id(api, &uri, user_id);
+	add_twitter_id(api, &uri, twitter_id);
 	add_include_entities(api, &uri, include_entities);
 	add_skip_status(api, &uri, skip_status);
 
@@ -3593,7 +3589,7 @@ The entities node that may appear within embedded statuses will be disincluded w
 Example Values: false
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3618,8 +3614,7 @@ Example Values: false
 
 int get_users_show (
 	char **res, //response
-	tweet_id_t user_id, //optional. if not 0, add it to argument.
-	char *screen_name, //optional. if not 0, add it to argument.
+	twitter_id twitter_id, //Always specify either an user_id or screen_name when requesting a user timeline.
 	int include_entities //optional. if not -1, add it to argument.
 	) {
 /*
@@ -3646,10 +3641,15 @@ The entities node will be disincluded when set to false.
 Example Values: false
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	if(!is_valid_id(twitter_id)) {
+		fprintf(stderr, "need user_id number or screen_name text\n");
 		return 0;
 	}
 
@@ -3658,8 +3658,7 @@ Example Values: false
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_user_id(api, &uri, user_id);
-	add_screen_name(api, &uri, screen_name);
+	add_twitter_id(api, &uri, twitter_id);
 	add_include_entities(api, &uri, include_entities);
 
 	int ret = http_request(uri, GET, res);
@@ -3705,7 +3704,7 @@ The entities node will be disincluded from embedded tweet objects when set to fa
 Example Values: false
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3731,8 +3730,7 @@ Example Values: false
 
 int get_users_contributees (
 	char **res, //response
-	tweet_id_t user_id, //optional. if not 0, add it to argument.
-	char *screen_name, //optional. if not 0, add it to argument.
+	twitter_id twitter_id, //Always specify either an user_id or screen_name when requesting a user timeline.
 	int include_entities, //optional. if not -1, add it to argument.
 	int skip_status //optional. if not -1, add it to argument.
 	) {
@@ -3758,10 +3756,15 @@ skip_status optional
 When set to either true, t or 1 statuses will not be included in the returned user objects.
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	if(!is_valid_id(twitter_id)) {
+		fprintf(stderr, "need user_id number or screen_name text\n");
 		return 0;
 	}
 
@@ -3770,8 +3773,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_user_id(api, &uri, user_id);
-	add_screen_name(api, &uri, screen_name);
+	add_twitter_id(api, &uri, twitter_id);
 	add_include_entities(api, &uri, include_entities);
 	add_skip_status(api, &uri, skip_status);
 
@@ -3784,8 +3786,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 
 int get_users_contributors (
 	char **res, //response
-	tweet_id_t user_id, //optional. if not 0, add it to argument.
-	char *screen_name, //optional. if not 0, add it to argument.
+	twitter_id twitter_id, //Always specify either an user_id or screen_name when requesting a user timeline.
 	int include_entities, //optional. if not -1, add it to argument.
 	int skip_status //optional. if not -1, add it to argument.
 	) {
@@ -3815,10 +3816,15 @@ skip_status optional
 When set to either true, t or 1 statuses will not be included in the returned user objects.
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	if(!is_valid_id(twitter_id)) {
+		fprintf(stderr, "need user_id number or screen_name text\n");
 		return 0;
 	}
 
@@ -3827,8 +3833,7 @@ When set to either true, t or 1 statuses will not be included in the returned us
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_user_id(api, &uri, user_id);
-	add_screen_name(api, &uri, screen_name);
+	add_twitter_id(api, &uri, twitter_id);
 	add_include_entities(api, &uri, include_entities);
 	add_skip_status(api, &uri, skip_status);
 
@@ -3846,7 +3851,7 @@ int post_account_remove_profile_banner (
 Resource URL
 https://api.twitter.com/1.1/account/remove_profile_banner.json
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
@@ -3869,8 +3874,7 @@ https://api.twitter.com/1.1/account/remove_profile_banner.json
 
 int get_users_profile_banner (
 	char **res, //response
-	tweet_id_t user_id, //optional. if not 0, add it to argument.
-	char *screen_name //optional. if not 0, add it to argument.
+	twitter_id twitter_id //Always specify either an user_id or screen_name when requesting a user timeline.
 	) {
 /*
 Resource URL
@@ -3894,10 +3898,15 @@ The screen name of the user for whom to return results for. Helpful for disambig
 Example Values: noradio
 
 */
-	dbg_printf("");
+	dbg_printf("\n");
 
 	if (!check_keys()) {
 		fprintf(stderr, "need register_keys\n");
+		return 0;
+	}
+
+	if(!is_valid_id(twitter_id)) {
+		fprintf(stderr, "need user_id number or screen_name text\n");
 		return 0;
 	}
 
@@ -3906,8 +3915,7 @@ Example Values: noradio
 	alloc_strcat(&uri, api_uri_1_1);
 	alloc_strcat(&uri, api_uri[api]);
 
-	add_user_id(api, &uri, user_id);
-	add_screen_name(api, &uri, screen_name);
+	add_twitter_id(api, &uri, twitter_id);
 
 	int ret = http_request(uri, POST, res);
 
