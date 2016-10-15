@@ -5,7 +5,7 @@
 #ifdef DEBUG
 	#define dbg_printf(...) (fprintf(stderr, __FILE__ ":%d:%s:", __LINE__, __func__), (fprintf(stderr, __VA_ARGS__)))
 #else
-	#define dbg_printf(...)
+	#define dbg_printf(...) (0)
 #endif
 
 void *aligned_alloc_and_null_check(size_t, size_t);
