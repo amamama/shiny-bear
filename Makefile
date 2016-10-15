@@ -2,7 +2,7 @@ CC		?= cc
 
 CFLAGS		:= -ansi -std=c11 -W -Wall -Werror -O2 $(CFLAGS)
 LDFLAGS		:= -lcurl -loauth $(LDFALGS)#-lcrypto
-MAINCFLAGS	:= $(MAINCFLAGS)
+MAINCFLAGS	:= $(MAINCFLAGS) utils/utils.c
 MAINLDFLAGS	:= -lncursesw -ljansson $(LDFLAGS)
 
 SRC_DIR		:= ./src

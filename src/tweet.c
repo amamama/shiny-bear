@@ -12,7 +12,7 @@
 #include <curl/curl.h>
 
 #include "tweet.h"
-#include "utils.h"
+#include "../utils/utils.h"
 
 oauth_keys user_keys = {NULL, NULL, NULL, NULL};
 oauth_keys register_keys(oauth_keys keys) {
